@@ -6,7 +6,11 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD, APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { AuthModule } from './auth/auth.module';
+import { UsersController } from './controllers/users.controller';
+import { ArticlesController } from './controllers/articles.controller';
+import { UsersService } from './services/users.service';
+import { ArticlesService } from './services/articles.service';
+import { CaptchaModule } from './auth/captcha.module';
 import { appConfig, databaseConfig, redisConfig, jwtConfig } from './config';
 import { JwtAuthGuard, PermissionsGuard } from './common/guards';
 import { AllExceptionsFilter } from './common/filters';
@@ -27,7 +31,7 @@ import { SystemModule } from './system/system.module';
       envFilePath: ['.env.local', '.env'],
     }),
     
-    // 数据库模块 (暂时注释掉，pnpm环境下sqlite3问题)
+    // 数据库模块 (暂时禁用，先让项目运行起来)
     // TypeOrmModule.forRootAsync({
     //   useFactory: (configService: ConfigService) => configService.get('database') || {},
     //   inject: [ConfigService],
@@ -49,17 +53,19 @@ import { SystemModule } from './system/system.module';
       inject: [ConfigService],
     }),
     
-    // 业务模块 (暂时禁用，等数据库连接正常后启用)
-     // AuthModule,
-     // UsersModule,
-     // RolesModule,
-     // PermissionsModule,
-     // MenusModule,
-     // SystemModule,
+    // 业务模块
+    CaptchaModule,
+    // UsersModule,
+    // RolesModule,
+    // PermissionsModule,
+    // MenusModule,
+    // SystemModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, UsersController, ArticlesController],
   providers: [
     AppService,
+    UsersService,
+    ArticlesService,
     // 全局守卫
     {
       provide: APP_GUARD,

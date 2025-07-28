@@ -72,6 +72,22 @@ export class RegisterDto {
   @IsString({ message: '手机号必须是字符串' })
   @Matches(/^1[3-9]\d{9}$/, { message: '手机号格式不正确' })
   phone?: string;
+
+  @ApiProperty({
+    description: '验证码会话ID',
+    example: 'captcha_1234567890_abc123',
+  })
+  @IsNotEmpty({ message: '验证码会话ID不能为空' })
+  @IsString({ message: '验证码会话ID必须是字符串' })
+  captchaSessionId: string;
+
+  @ApiProperty({
+    description: '验证码',
+    example: 'ABCD',
+  })
+  @IsNotEmpty({ message: '验证码不能为空' })
+  @IsString({ message: '验证码必须是字符串' })
+  captcha: string;
 }
 
 export class RegisterResponseDto {

@@ -6,10 +6,13 @@ import {
   HttpCode,
   HttpStatus,
   Patch,
+  Get,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
+import { CaptchaService } from './captcha.service';
 import {
   LoginDto,
   RegisterDto,
@@ -21,6 +24,12 @@ import {
   RegisterResponseDto,
   RefreshTokenResponseDto,
 } from './dto';
+import {
+  GenerateCaptchaDto,
+  GenerateCaptchaResponseDto,
+  VerifyCaptchaDto,
+  VerifyCaptchaResponseDto,
+} from './dto/captcha.dto';
 import {
   Public,
   CurrentUser,
@@ -36,7 +45,10 @@ import { User } from '../entities';
 @Controller('auth')
 @ApiErrorResponses()
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly captchaService: CaptchaService,
+  ) {}
 
   @Post('login')
   @Public()
@@ -44,6 +56,12 @@ export class AuthController {
   @ApiOperation({ summary: '用户登录' })
   @ApiSuccessResponse(LoginResponseDto, { description: '登录成功' })
   async login(@Body() loginDto: LoginDto): Promise<ResponseDto<LoginResponseDto>> {
+    // 验证验证码
+    const captchaResult = this.captchaService.verifyCaptcha(loginDto.captchaSessionId, loginDto.captcha);
+    if (!captchaResult.valid) {
+      throw new BadRequestException(captchaResult.message);
+    }
+    
     const result = await this.authService.login(loginDto);
     return ResponseDto.success(result, '登录成功');
   }
@@ -54,6 +72,12 @@ export class AuthController {
   @ApiOperation({ summary: '用户注册' })
   @ApiCreatedResponse(RegisterResponseDto, { description: '注册成功' })
   async register(@Body() registerDto: RegisterDto): Promise<ResponseDto<RegisterResponseDto>> {
+    // 验证验证码
+    const captchaResult = this.captchaService.verifyCaptcha(registerDto.captchaSessionId, registerDto.captcha);
+    if (!captchaResult.valid) {
+      throw new BadRequestException(captchaResult.message);
+    }
+    
     const result = await this.authService.register(registerDto);
     return ResponseDto.created(result, '注册成功');
   }
@@ -140,5 +164,30 @@ export class AuthController {
     };
     
     return ResponseDto.success(userInfo, '令牌验证成功');
+  }
+
+  @Get('captcha/generate')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '生成验证码' })
+  @ApiSuccessResponse(GenerateCaptchaResponseDto, { description: '验证码生成成功' })
+  async generateCaptcha(): Promise<ResponseDto<GenerateCaptchaResponseDto>> {
+    const result = await this.captchaService.generateCaptcha();
+    return ResponseDto.success(result, '验证码生成成功');
+  }
+
+  @Post('captcha/verify')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: '验证验证码' })
+  @ApiSuccessResponse(VerifyCaptchaResponseDto, { description: '验证码验证成功' })
+  async verifyCaptcha(
+    @Body() verifyCaptchaDto: VerifyCaptchaDto,
+  ): Promise<ResponseDto<VerifyCaptchaResponseDto>> {
+    const result = this.captchaService.verifyCaptcha(
+      verifyCaptchaDto.sessionId,
+      verifyCaptchaDto.captcha,
+    );
+    return ResponseDto.success(result, '验证码验证完成');
   }
 }
