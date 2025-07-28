@@ -1,0 +1,81 @@
+# Code Owners for LDesign API Server
+# This file defines who is responsible for code in this repository.
+# More info: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+
+# Global owners - these users will be requested for review when someone opens a pull request
+* @ldesign-team
+
+# Core application files
+/src/ @ldesign-team @backend-team
+
+# Authentication and security
+/src/auth/ @ldesign-team @security-team
+/src/common/guards/ @ldesign-team @security-team
+/src/common/filters/ @ldesign-team @security-team
+
+# Database and entities
+/src/entities/ @ldesign-team @database-team
+/src/config/database.config.ts @ldesign-team @database-team
+
+# Configuration files
+/src/config/ @ldesign-team @devops-team
+
+# Docker and deployment
+/docker/ @ldesign-team @devops-team
+/Dockerfile @ldesign-team @devops-team
+/docker-compose*.yml @ldesign-team @devops-team
+
+# CI/CD and GitHub workflows
+/.github/ @ldesign-team @devops-team
+
+# Documentation
+/README.md @ldesign-team @docs-team
+/CONTRIBUTING.md @ldesign-team @docs-team
+/SECURITY.md @ldesign-team @security-team @docs-team
+/CHANGELOG.md @ldesign-team @docs-team
+
+# Package management
+/package.json @ldesign-team @backend-team
+/pnpm-lock.yaml @ldesign-team @backend-team
+
+# Environment and configuration
+/.env.example @ldesign-team @devops-team
+/.gitignore @ldesign-team
+
+# License and legal
+/LICENSE @ldesign-team @legal-team
+
+# TypeScript configuration
+/tsconfig*.json @ldesign-team @backend-team
+
+# Linting and formatting
+/.eslintrc.js @ldesign-team @backend-team
+/.prettierrc @ldesign-team @backend-team
+
+# Testing
+/test/ @ldesign-team @qa-team
+/jest.config.js @ldesign-team @qa-team
+
+# Database migrations and seeds
+/src/migrations/ @ldesign-team @database-team
+/src/seeds/ @ldesign-team @database-team
+
+# API documentation
+/docs/ @ldesign-team @docs-team @api-team
+
+# Security-sensitive files (require additional review)
+/src/auth/strategies/ @ldesign-team @security-team
+/src/common/decorators/permissions.decorator.ts @ldesign-team @security-team
+/src/config/jwt.config.ts @ldesign-team @security-team
+/src/config/redis.config.ts @ldesign-team @security-team
+
+# Performance-critical files
+/src/common/interceptors/ @ldesign-team @performance-team
+/src/common/filters/all-exceptions.filter.ts @ldesign-team @performance-team
+
+# Third-party integrations
+/src/integrations/ @ldesign-team @integration-team
+
+# Monitoring and logging
+/src/common/interceptors/logging.interceptor.ts @ldesign-team @monitoring-team
+/src/entities/system-log.entity.ts @ldesign-team @monitoring-team

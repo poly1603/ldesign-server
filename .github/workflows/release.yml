@@ -1,0 +1,444 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g., v1.0.0)'
+        required: true
+        type: string
+
+env:
+  NODE_VERSION: '18'
+  PNPM_VERSION: '8'
+
+jobs:
+  # 验证发布
+  validate:
+    name: 🔍 Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      tag: ${{ steps.version.outputs.tag }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🏷️ Get version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/}"
+          fi
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "tag=${VERSION}" >> $GITHUB_OUTPUT
+          echo "Release version: ${VERSION}"
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Validate package.json version
+        run: |
+          PACKAGE_VERSION=$(node -p "require('./package.json').version")
+          RELEASE_VERSION="${{ steps.version.outputs.version }}"
+          # Remove 'v' prefix if present
+          RELEASE_VERSION=${RELEASE_VERSION#v}
+          if [ "$PACKAGE_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "❌ Package version ($PACKAGE_VERSION) doesn't match release version ($RELEASE_VERSION)"
+            exit 1
+          fi
+          echo "✅ Version validation passed"
+
+  # 运行测试
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    needs: validate
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: test_password
+          MYSQL_DATABASE: ldesign_test
+          MYSQL_USER: test_user
+          MYSQL_PASSWORD: test_password
+        ports:
+          - 3306:3306
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🔍 Lint code
+        run: pnpm run lint
+
+      - name: 🧪 Run unit tests
+        run: pnpm run test:cov
+
+      - name: 🔧 Setup test environment
+        run: |
+          cp .env.example .env.test
+          echo "DB_HOST=localhost" >> .env.test
+          echo "DB_PORT=3306" >> .env.test
+          echo "DB_USERNAME=test_user" >> .env.test
+          echo "DB_PASSWORD=test_password" >> .env.test
+          echo "DB_DATABASE=ldesign_test" >> .env.test
+          echo "REDIS_HOST=localhost" >> .env.test
+          echo "REDIS_PORT=6379" >> .env.test
+
+      - name: 🗄️ Run database migrations
+        run: pnpm run migration:run
+        env:
+          NODE_ENV: test
+
+      - name: 🔗 Run integration tests
+        run: pnpm run test:e2e
+        env:
+          NODE_ENV: test
+
+  # 构建应用
+  build:
+    name: 🏗️ Build Application
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: 📦 Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 🏗️ Build application
+        run: pnpm run build
+
+      - name: 📦 Create release archive
+        run: |
+          tar -czf ldesign-api-${{ needs.validate.outputs.version }}.tar.gz \
+            dist/ \
+            package.json \
+            pnpm-lock.yaml \
+            README.md \
+            LICENSE \
+            CHANGELOG.md
+
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: release-build
+          path: |
+            ldesign-api-${{ needs.validate.outputs.version }}.tar.gz
+            dist/
+          retention-days: 30
+
+  # 构建和推送 Docker 镜像
+  docker:
+    name: 🐳 Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [validate, test]
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🐳 Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 🐳 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ldesign/api
+            ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🏗️ Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            VERSION=${{ needs.validate.outputs.version }}
+            BUILD_DATE=${{ github.event.head_commit.timestamp }}
+            VCS_REF=${{ github.sha }}
+
+  # 创建 GitHub Release
+  release:
+    name: 📦 Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: [validate, test, build, docker]
+    permissions:
+      contents: write
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📥 Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: release-build
+
+      - name: 📝 Generate changelog
+        id: changelog
+        run: |
+          # Get the previous tag
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          
+          if [ -n "$PREVIOUS_TAG" ]; then
+            echo "Generating changelog from $PREVIOUS_TAG to ${{ needs.validate.outputs.tag }}"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" $PREVIOUS_TAG..${{ needs.validate.outputs.tag }})
+          else
+            echo "No previous tag found, generating changelog from first commit"
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)")
+          fi
+          
+          # Save changelog to file
+          echo "$CHANGELOG" > RELEASE_CHANGELOG.md
+          
+          # Set output for GitHub release
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: 📦 Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ needs.validate.outputs.tag }}
+          name: Release ${{ needs.validate.outputs.version }}
+          body: |
+            ## 🚀 Release ${{ needs.validate.outputs.version }}
+            
+            ### 📋 Changes
+            ${{ steps.changelog.outputs.changelog }}
+            
+            ### 🐳 Docker Images
+            - `ldesign/api:${{ needs.validate.outputs.version }}`
+            - `ldesign/api:latest`
+            - `ghcr.io/${{ github.repository }}:${{ needs.validate.outputs.version }}`
+            
+            ### 📦 Installation
+            
+            #### Using Docker
+            ```bash
+            docker pull ldesign/api:${{ needs.validate.outputs.version }}
+            ```
+            
+            #### Using Source Code
+            ```bash
+            wget https://github.com/${{ github.repository }}/releases/download/${{ needs.validate.outputs.tag }}/ldesign-api-${{ needs.validate.outputs.version }}.tar.gz
+            tar -xzf ldesign-api-${{ needs.validate.outputs.version }}.tar.gz
+            ```
+            
+            ### 🔗 Links
+            - [Documentation](https://github.com/${{ github.repository }}/blob/${{ needs.validate.outputs.tag }}/README.md)
+            - [Changelog](https://github.com/${{ github.repository }}/blob/${{ needs.validate.outputs.tag }}/CHANGELOG.md)
+            - [Docker Hub](https://hub.docker.com/r/ldesign/api)
+          files: |
+            ldesign-api-${{ needs.validate.outputs.version }}.tar.gz
+          draft: false
+          prerelease: ${{ contains(needs.validate.outputs.version, '-') }}
+          generate_release_notes: true
+
+  # 部署到生产环境
+  deploy:
+    name: 🚀 Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [validate, test, build, docker, release]
+    environment:
+      name: production
+      url: https://api.ldesign.com
+    if: ${{ !contains(needs.validate.outputs.version, '-') }}
+    steps:
+      - name: 🚀 Deploy to production server
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/ldesign-api
+            
+            # Backup current version
+            docker-compose down
+            docker tag ldesign/api:latest ldesign/api:backup-$(date +%Y%m%d-%H%M%S)
+            
+            # Pull new version
+            docker pull ldesign/api:${{ needs.validate.outputs.version }}
+            docker tag ldesign/api:${{ needs.validate.outputs.version }} ldesign/api:latest
+            
+            # Update docker-compose.yml if needed
+            # sed -i 's/image: ldesign\/api:.*/image: ldesign\/api:${{ needs.validate.outputs.version }}/' docker-compose.yml
+            
+            # Start new version
+            docker-compose up -d
+            
+            # Wait for health check
+            sleep 30
+            
+            # Verify deployment
+            if curl -f http://localhost:3000/api/v1/health; then
+              echo "✅ Deployment successful"
+              # Clean up old images (keep last 3 versions)
+              docker images ldesign/api --format "table {{.Tag}}\t{{.ID}}" | grep -E '^[0-9]+\.[0-9]+\.[0-9]+' | tail -n +4 | awk '{print $2}' | xargs -r docker rmi
+            else
+              echo "❌ Deployment failed, rolling back"
+              docker-compose down
+              docker tag ldesign/api:backup-$(date +%Y%m%d-%H%M%S) ldesign/api:latest
+              docker-compose up -d
+              exit 1
+            fi
+
+      - name: 📊 Post-deployment verification
+        run: |
+          sleep 60
+          
+          # Health check
+          if ! curl -f https://api.ldesign.com/api/v1/health; then
+            echo "❌ Health check failed"
+            exit 1
+          fi
+          
+          # Version check
+          DEPLOYED_VERSION=$(curl -s https://api.ldesign.com/api/v1/ | jq -r '.data.version')
+          EXPECTED_VERSION="${{ needs.validate.outputs.version }}"
+          EXPECTED_VERSION=${EXPECTED_VERSION#v}
+          
+          if [ "$DEPLOYED_VERSION" != "$EXPECTED_VERSION" ]; then
+            echo "❌ Version mismatch: deployed $DEPLOYED_VERSION, expected $EXPECTED_VERSION"
+            exit 1
+          fi
+          
+          echo "✅ Deployment verification successful"
+
+  # 通知
+  notify:
+    name: 📢 Notify Release
+    runs-on: ubuntu-latest
+    needs: [validate, test, build, docker, release, deploy]
+    if: always()
+    steps:
+      - name: 📢 Notify success
+        if: needs.deploy.result == 'success' || (needs.release.result == 'success' && needs.deploy.result == 'skipped')
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: |
+            🚀 **Release ${{ needs.validate.outputs.version }} deployed successfully!**
+            
+            📦 **GitHub Release**: https://github.com/${{ github.repository }}/releases/tag/${{ needs.validate.outputs.tag }}
+            🐳 **Docker Image**: `ldesign/api:${{ needs.validate.outputs.version }}`
+            🌐 **Production**: https://api.ldesign.com
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: 📢 Notify failure
+        if: failure()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: failure
+          text: |
+            ❌ **Release ${{ needs.validate.outputs.version }} failed!**
+            
+            Please check the GitHub Actions logs for details.
+            🔗 **Workflow**: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: 📧 Send email notification
+        if: needs.deploy.result == 'success'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: ${{ secrets.SMTP_SERVER }}
+          server_port: ${{ secrets.SMTP_PORT }}
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "🚀 LDesign API ${{ needs.validate.outputs.version }} Released"
+          body: |
+            Hello Team,
+            
+            LDesign API version ${{ needs.validate.outputs.version }} has been successfully released and deployed to production.
+            
+            📦 GitHub Release: https://github.com/${{ github.repository }}/releases/tag/${{ needs.validate.outputs.tag }}
+            🐳 Docker Image: ldesign/api:${{ needs.validate.outputs.version }}
+            🌐 Production URL: https://api.ldesign.com
+            📚 API Documentation: https://api.ldesign.com/api-docs
+            
+            Best regards,
+            LDesign CI/CD System
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: LDesign CI/CD <noreply@ldesign.com>

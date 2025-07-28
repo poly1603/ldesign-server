@@ -1,0 +1,69 @@
+version: '3.8'
+
+services:
+  # 开发环境MySQL数据库
+  mysql-dev:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=dev_password
+      - MYSQL_DATABASE=ldesign_api_dev
+      - MYSQL_USER=ldesign_dev
+      - MYSQL_PASSWORD=ldesign_dev123
+    volumes:
+      - mysql_dev_data:/var/lib/mysql
+      - ./docker/mysql/init-dev.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - ldesign-dev-network
+    restart: unless-stopped
+    command: --default-authentication-plugin=mysql_native_password
+
+  # 开发环境Redis缓存
+  redis-dev:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - ldesign-dev-network
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+
+  # phpMyAdmin（数据库管理工具）
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - "8080:80"
+    environment:
+      - PMA_HOST=mysql-dev
+      - PMA_PORT=3306
+      - PMA_USER=root
+      - PMA_PASSWORD=dev_password
+    depends_on:
+      - mysql-dev
+    networks:
+      - ldesign-dev-network
+    restart: unless-stopped
+
+  # Redis Commander（Redis管理工具）
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis-dev:6379
+    depends_on:
+      - redis-dev
+    networks:
+      - ldesign-dev-network
+    restart: unless-stopped
+
+volumes:
+  mysql_dev_data:
+  redis_dev_data:
+
+networks:
+  ldesign-dev-network:
+    driver: bridge
