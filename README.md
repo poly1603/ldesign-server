@@ -1,206 +1,464 @@
 # @ldesign/server
 
-LDesign 后端 API 服务 - 提供完整的项目管理、构建、部署、测试和监控接口。
+LDesign 后台接口服务 - 基于 NestJS 的后台 API 服务，提供 Node 版本管理、Git 环境检测、项目管理等功能。
 
-## 功能特性
+## ✨ 特性
 
-### 🎯 核心功能
-- **项目管理** - 导入、创建、更新、删除项目
-- **工具集成** - 集成所有 LDesign 工具包
-- **构建管理** - 构建任务的创建、监控和取消
-- **部署管理** - 多环境部署和回滚
-- **测试管理** - 单元测试、集成测试、E2E 测试
-- **系统监控** - CPU、内存、磁盘、网络监控
-- **日志管理** - 日志查询和管理
+- 🚀 **Node 版本管理** - 支持 nvm-windows、nvs、fnm 三种版本管理工具
+- 🔧 **Git 环境管理** - 检测 Git 安装状态，支持通过包管理器重装
+- 📦 **项目管理** - 完整的项目 CRUD 操作，支持项目导入和自动检测
+- 🔍 **路径验证** - 完善的路径验证功能，确保路径安全
+- 🎯 **统一响应格式** - 标准化的 API 响应格式
+- 💾 **SQLite 数据库** - 轻量级本地数据库存储
+- 📚 **Swagger 文档** - 自动生成的 API 文档，支持在线测试
+- ⚙️ **配置管理** - 统一的环境变量管理和验证
+- 📝 **请求日志** - 自动记录所有 HTTP 请求日志
+- 🏥 **健康检查** - 详细的系统健康状态监控
+- 🐳 **Docker 支持** - 完整的 Docker 部署方案
+- 🧪 **测试框架** - 基于 Vitest 的现代化测试支持
 
-### 🔧 技术栈
-- **Express** - Web 框架
-- **WebSocket** - 实时通信
-- **SQLite (better-sqlite3)** - 数据持久化
-- **TypeScript** - 类型安全
-
-## 安装
+## 📦 安装
 
 ```bash
+# 安装依赖
 pnpm install
-```
 
-## 开发
+# 复制环境变量文件（可选）
+cp .env.example .env
 
-```bash
-# 开发模式（带热重载）
-pnpm dev
-
-# 生产构建
+# 构建项目
 pnpm build
 
-# 运行测试
-pnpm test
+# 启动开发服务器（支持热重载）
+pnpm start:dev
+
+# 启动生产服务器
+pnpm start:prod
+
+# 启动调试模式
+pnpm start:debug
 ```
 
-## 使用
+## 🚀 快速开始
 
-### 启动服务器
-
-```typescript
-import { App } from '@ldesign/server'
-
-const app = new App({
-  port: 3000,
-  host: '127.0.0.1',
-  enableWebSocket: true,
-})
-
-await app.start()
-```
-
-### 环境变量
+### 启动服务
 
 ```bash
-PORT=3000                # 服务器端口
-HOST=127.0.0.1          # 服务器地址
-LOG_LEVEL=info          # 日志级别：debug, info, warn, error
-ENABLE_WS=true          # 启用 WebSocket
-CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173  # CORS 来源
+# 开发模式（支持热重载）
+pnpm start:dev
+
+# 生产模式
+pnpm start:prod
 ```
 
-## API 接口
+服务默认运行在 `http://localhost:3000/api`
+
+### 访问 API 文档
+
+启动服务后，访问 Swagger UI：
+```
+http://localhost:3000/api-docs
+```
 
 ### 健康检查
 
+```bash
+curl http://localhost:3000/api/health
 ```
-GET /api/health
+
+响应示例：
+```json
+{
+  "success": true,
+  "data": {
+    "status": "ok",
+    "timestamp": 1704067200000,
+    "uptime": 3600,
+    "system": {
+      "platform": "win32",
+      "arch": "x64",
+      "nodeVersion": "v20.10.0",
+      "memory": {
+        "total": 8589934592,
+        "free": 4294967296,
+        "used": 4294967296
+      }
+    }
+  }
+}
+```
+
+## 📚 API 文档
+
+### Node 版本管理
+
+#### 获取已安装的 Node 版本列表
+
+```http
+GET /api/node/versions
+```
+
+响应：
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "version": "18.17.0",
+      "installed": true,
+      "active": false
+    },
+    {
+      "version": "20.10.0",
+      "installed": true,
+      "active": true
+    }
+  ]
+}
+```
+
+#### 获取当前使用的 Node 版本
+
+```http
+GET /api/node/current
+```
+
+#### 获取可用的版本管理工具列表
+
+```http
+GET /api/node/managers
+```
+
+#### 检测已安装的版本管理工具状态
+
+```http
+GET /api/node/manager/status
+```
+
+#### 安装指定的版本管理工具
+
+```http
+POST /api/node/manager/install
+Content-Type: application/json
+
+{
+  "managerType": "nvm-windows"
+}
+```
+
+#### 安装指定版本的 Node.js
+
+```http
+POST /api/node/install
+Content-Type: application/json
+
+{
+  "version": "18.17.0"
+}
+```
+
+#### 切换到指定版本
+
+```http
+POST /api/node/switch
+Content-Type: application/json
+
+{
+  "version": "20.10.0"
+}
+```
+
+#### 删除指定版本
+
+```http
+DELETE /api/node/versions/18.17.0
+```
+
+#### 获取可用版本列表（从远程）
+
+```http
+GET /api/node/versions/available
+```
+
+### Git 管理
+
+#### 检测 Git 安装状态和版本
+
+```http
+GET /api/git/status
+```
+
+响应：
+
+```json
+{
+  "success": true,
+  "data": {
+    "installed": true,
+    "version": "git version 2.42.0.windows.2",
+    "path": "C:\\Program Files\\Git\\cmd\\git.exe"
+  }
+}
+```
+
+#### 获取 Git 配置信息
+
+```http
+GET /api/git/config
+```
+
+#### 重新安装 Git
+
+```http
+POST /api/git/reinstall
+Content-Type: application/json
+
+{
+  "packageManager": "chocolatey"  // 可选：chocolatey 或 scoop
+}
 ```
 
 ### 项目管理
 
-```
-GET    /api/projects              # 获取所有项目
-GET    /api/projects/:id          # 获取项目详情
-POST   /api/projects/import       # 导入项目
-POST   /api/projects/create       # 创建项目
-PUT    /api/projects/:id          # 更新项目
-DELETE /api/projects/:id          # 删除项目
-POST   /api/projects/:id/open     # 打开项目
-GET    /api/projects/:id/stats    # 获取项目统计
+#### 获取项目列表
+
+```http
+GET /api/projects
 ```
 
-### 工具管理
+#### 获取项目详情
 
-```
-GET  /api/tools                   # 获取所有工具
-GET  /api/tools/:name/status      # 获取工具状态
-GET  /api/tools/:name/config      # 获取工具配置
-PUT  /api/tools/:name/config      # 更新工具配置
-POST /api/tools/:name/execute     # 执行工具操作
-POST /api/tools/:name/load        # 加载工具
+```http
+GET /api/projects/:id
 ```
 
-### 构建管理
+#### 创建新项目
 
-```
-GET  /api/builds                  # 获取构建列表
-GET  /api/builds/:id              # 获取构建详情
-POST /api/builds                  # 创建构建
-POST /api/builds/:id/cancel       # 取消构建
-```
+```http
+POST /api/projects
+Content-Type: application/json
 
-### 部署管理
-
-```
-GET  /api/deployments             # 获取部署列表
-GET  /api/deployments/:id         # 获取部署详情
-POST /api/deployments             # 创建部署
-POST /api/deployments/:id/rollback # 回滚部署
-```
-
-### 测试管理
-
-```
-GET  /api/tests                   # 获取测试列表
-GET  /api/tests/:id               # 获取测试详情
-POST /api/tests                   # 创建测试
-```
-
-### 监控
-
-```
-GET /api/monitor/system           # 获取系统监控数据
-GET /api/monitor/project/:id      # 获取项目监控数据
-```
-
-### 日志
-
-```
-GET    /api/logs                  # 获取日志列表
-DELETE /api/logs                  # 清空日志
-```
-
-## WebSocket
-
-连接到 `ws://localhost:3000/ws` 可以接收实时事件：
-
-```javascript
-const ws = new WebSocket('ws://localhost:3000/ws')
-
-ws.onmessage = (event) => {
-  const data = JSON.parse(event.data)
-  console.log('收到消息:', data)
+{
+  "name": "my-project",
+  "path": "C:\\Projects\\my-project",
+  "type": "web",
+  "framework": "vue",
+  "packageManager": "pnpm",
+  "description": "我的项目描述"
 }
-
-// 发送心跳
-ws.send(JSON.stringify({ type: 'ping' }))
-
-// 订阅事件
-ws.send(JSON.stringify({ 
-  type: 'subscribe', 
-  data: { events: ['build', 'deploy'] } 
-}))
 ```
 
-## 数据库
+#### 导入项目
 
-数据存储在 `.ldesign/server.db` SQLite 数据库中。
+```http
+POST /api/projects/import
+Content-Type: application/json
 
-### 表结构
+{
+  "path": "C:\\Projects\\existing-project",
+  "name": "Existing Project"  // 可选
+}
+```
 
-- **projects** - 项目信息
-- **tool_configs** - 工具配置
-- **builds** - 构建记录
-- **deployments** - 部署记录
-- **test_runs** - 测试记录
-- **logs** - 日志记录
+#### 更新项目
 
-## 示例
+```http
+PUT /api/projects/:id
+Content-Type: application/json
 
-### 导入项目
+{
+  "name": "Updated Project Name",
+  "description": "Updated description"
+}
+```
+
+#### 删除项目
+
+```http
+DELETE /api/projects/:id
+```
+
+#### 更新项目最后打开时间
+
+```http
+POST /api/projects/:id/open
+```
+
+### 系统工具
+
+#### 验证路径是否有效
+
+```http
+POST /api/system/validate-path
+Content-Type: application/json
+
+{
+  "path": "C:\\Projects\\my-project",
+  "mustExist": true,
+  "mustBeDirectory": true,
+  "mustBeReadable": true
+}
+```
+
+响应：
+
+```json
+{
+  "success": true,
+  "data": {
+    "valid": true,
+    "exists": true,
+    "isDirectory": true,
+    "isReadable": true,
+    "isWritable": true,
+    "errors": [],
+    "normalizedPath": "C:\\Projects\\my-project"
+  }
+}
+```
+
+#### 获取目录选择器提示信息
+
+```http
+GET /api/system/directory-picker
+```
+
+响应：
+
+```json
+{
+  "success": true,
+  "data": {
+    "platform": "Windows",
+    "method": "window.showDirectoryPicker()",
+    "description": "使用浏览器原生的 Directory Picker API 选择目录...",
+    "example": "..."
+  }
+}
+```
+
+## 🏗️ 项目结构
+
+```
+src/
+├── main.ts                    # 应用入口
+├── app.module.ts              # 根模块
+├── app.controller.ts          # 根控制器
+├── modules/
+│   ├── node/                  # Node 版本管理模块
+│   ├── git/                   # Git 管理模块
+│   ├── project/               # 项目管理模块
+│   └── system/                # 系统工具模块
+├── common/                    # 通用模块
+│   ├── filters/               # 异常过滤器
+│   ├── interceptors/          # 拦截器
+│   └── dto/                   # 通用 DTO
+├── database/                  # 数据库模块
+└── utils/                     # 工具类
+    ├── exec.util.ts           # 命令执行工具
+    ├── path.util.ts           # 路径工具
+    └── package-manager.util.ts # 包管理器工具
+```
+
+## 🔧 配置
+
+### 环境变量
+
+创建 `.env` 文件（参考 `.env.example`）：
+
+```env
+# 服务端口
+PORT=3000
+
+# 环境模式: development | production | test
+NODE_ENV=development
+
+# API 前缀
+API_PREFIX=api
+
+# 数据库路径
+DATABASE_PATH=ldesign-server.db
+
+# CORS 配置
+CORS_ORIGIN=true
+CORS_CREDENTIALS=true
+
+# Swagger 配置
+SWAGGER_ENABLED=true
+SWAGGER_TITLE=LDesign Server API
+SWAGGER_DESCRIPTION=LDesign 后台接口服务
+SWAGGER_VERSION=1.0.0
+SWAGGER_PATH=api-docs
+
+# 日志配置
+LOG_LEVEL=log
+LOG_TIMESTAMP=true
+```
+
+### 数据库
+
+数据库文件位置：`ldesign-server.db`（SQLite）
+
+数据库会在首次启动时自动创建。
+
+## 📝 开发
+
+### 代码规范
+
+项目使用 ESLint 和 Prettier 进行代码格式化：
 
 ```bash
-curl -X POST http://localhost:3000/api/projects/import \
-  -H "Content-Type: application/json" \
-  -d '{"path": "/path/to/project", "detect": true}'
+# 检查代码
+pnpm lint
+
+# 自动修复
+pnpm lint --fix
 ```
 
-### 创建构建
+### 测试
 
 ```bash
-curl -X POST http://localhost:3000/api/builds \
-  -H "Content-Type: application/json" \
-  -d '{"projectId": "project-id"}'
+# 运行测试
+pnpm test
+
+# 监听模式运行测试
+pnpm test:watch
+
+# 使用 UI 运行测试
+pnpm test:ui
+
+# 测试覆盖率
+pnpm test:cov
+
+# E2E 测试
+pnpm test:e2e
 ```
 
-### 部署项目
+### Docker 部署
 
 ```bash
-curl -X POST http://localhost:3000/api/deployments \
-  -H "Content-Type: application/json" \
-  -d '{
-    "projectId": "project-id",
-    "environment": "production",
-    "version": "v1.0.0"
-  }'
+# 使用 Docker Compose 启动
+docker-compose up -d
+
+# 构建 Docker 镜像
+docker build -f Dockerfile -t ldesign-server:latest ../..
+
+# 运行容器
+docker run -d -p 3000:3000 --name ldesign-server ldesign-server:latest
 ```
 
-## License
+## 📄 许可证
 
-MIT
+MIT License
+
+## 👥 贡献
+
+欢迎提交 Issue 和 Pull Request！
+
+## 🔗 相关链接
+
+- [NestJS 文档](https://docs.nestjs.com/)
+- [TypeORM 文档](https://typeorm.io/)
+- [Better-SQLite3 文档](https://github.com/WiseLibs/better-sqlite3)
+

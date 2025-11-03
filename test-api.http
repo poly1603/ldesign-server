@@ -1,0 +1,31 @@
+### LDesign Server API 测试
+
+### 健康检查
+GET http://localhost:3000/api/health
+
+### Node 管理器状态
+GET http://localhost:3000/api/node/manager/status
+
+### Node 可用管理器列表
+GET http://localhost:3000/api/node/managers
+
+### Node 版本列表
+GET http://localhost:3000/api/node/versions
+
+### Node 当前版本
+GET http://localhost:3000/api/node/current
+
+### Git 状态
+GET http://localhost:3000/api/git/status
+
+### Git 配置
+GET http://localhost:3000/api/git/config
+
+### 项目列表
+GET http://localhost:3000/api/projects
+
+### 系统目录选择器信息
+GET http://localhost:3000/api/system/directory-picker
+
+### Swagger 文档
+GET http://localhost:3000/api-docs

@@ -1,0 +1,33 @@
+# Source files
+src/
+test/
+*.ts
+!*.d.ts
+
+# Config files
+tsconfig.json
+tsconfig.build.json
+nest-cli.json
+.eslintrc.js
+.prettierrc
+
+# Development files
+*.log
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+dist/
+build/
+

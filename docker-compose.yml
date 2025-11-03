@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  server:
+    build:
+      context: ../../
+      dockerfile: tools/server/Dockerfile
+    container_name: ldesign-server
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_PATH=/app/data/ldesign-server.db
+    volumes:
+      # 持久化数据库
+      - server-data:/app/data
+      # 挂载日志目录（可选）
+      - server-logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--tries=1', '--spider', 'http://localhost:3000/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  server-data:
+    driver: local
+  server-logs:
+    driver: local
+
