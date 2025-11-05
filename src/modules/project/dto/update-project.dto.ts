@@ -1,5 +1,5 @@
 import { IsString, IsOptional, IsEnum } from 'class-validator'
-import { ProjectType } from '../entities/project.entity'
+import { ProjectType } from '../entities/project.entity.js'
 
 /**
  * 更新项目 DTO

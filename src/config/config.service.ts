@@ -1,23 +1,35 @@
 import { Injectable } from '@nestjs/common'
 
 /**
- * 应用配置接口
+ * API Operation
  */
 export interface AppConfig {
-  /** 服务端口 */
+  /**
+ * API Operation
+ */
   port: number
-  /** 环境模式 */
+  /**
+ * API Operation
+ */
   nodeEnv: 'development' | 'production' | 'test'
-  /** API 前缀 */
+  /**
+ * API Operation
+ */
   apiPrefix: string
-  /** 数据库路径 */
+  /**
+ * API Operation
+ */
   databasePath: string
-  /** CORS 配置 */
+  /**
+ * API Operation
+ */
   cors: {
     origin: string | string[] | boolean
     credentials: boolean
   }
-  /** Swagger 配置 */
+  /**
+ * API Operation
+ */
   swagger: {
     enabled: boolean
     title: string
@@ -25,7 +37,9 @@ export interface AppConfig {
     version: string
     path: string
   }
-  /** 日志配置 */
+  /**
+ * API Operation
+ */
   logging: {
     level: 'error' | 'warn' | 'log' | 'debug' | 'verbose'
     timestamp: boolean
@@ -33,8 +47,7 @@ export interface AppConfig {
 }
 
 /**
- * 配置服务
- * 统一管理应用配置和环境变量
+ * API Operation
  */
 @Injectable()
 export class ConfigService {
@@ -46,9 +59,8 @@ export class ConfigService {
   }
 
   /**
-   * 加载配置
-   * @returns 应用配置对象
-   */
+ * API Operation
+ */
   private loadConfig(): AppConfig {
     return {
       port: this.getNumber('PORT', 3000),
@@ -64,7 +76,7 @@ export class ConfigService {
         title: this.getString('SWAGGER_TITLE', 'LDesign Server API'),
         description: this.getString(
           'SWAGGER_DESCRIPTION',
-          'LDesign 后台接口服务 - 提供 Node 版本管理、Git 环境检测、项目管理等功能',
+          'LDesign  -  Node Git ',
         ),
         version: this.getString('SWAGGER_VERSION', '1.0.0'),
         path: this.getString('SWAGGER_PATH', 'api-docs'),
@@ -80,40 +92,33 @@ export class ConfigService {
   }
 
   /**
-   * 验证配置
-   * @throws 如果配置无效则抛出错误
-   */
+ * API Operation
+ */
   private validateConfig(): void {
     if (this.config.port < 1 || this.config.port > 65535) {
-      throw new Error(`端口号必须在 1-65535 之间，当前值: ${this.config.port}`)
+      throw new Error(` 1-65535 : ${this.config.port}`)
     }
 
     if (
       !['development', 'production', 'test'].includes(this.config.nodeEnv)
     ) {
       throw new Error(
-        `NODE_ENV 必须是 development、production 或 test，当前值: ${this.config.nodeEnv}`,
+        `NODE_ENV  developmentproduction  test: ${this.config.nodeEnv}`,
       )
     }
   }
 
   /**
-   * 获取字符串环境变量
-   * @param key - 环境变量键
-   * @param defaultValue - 默认值
-   * @returns 环境变量值或默认值
-   */
+ * API Operation
+ */
   private getString(key: string, defaultValue: string): string {
     const value = process.env[key]
     return value !== undefined ? value : defaultValue
   }
 
   /**
-   * 获取数字环境变量
-   * @param key - 环境变量键
-   * @param defaultValue - 默认值
-   * @returns 环境变量值或默认值
-   */
+ * API Operation
+ */
   private getNumber(key: string, defaultValue: number): number {
     const value = process.env[key]
     if (value === undefined) {
@@ -127,11 +132,8 @@ export class ConfigService {
   }
 
   /**
-   * 获取布尔环境变量
-   * @param key - 环境变量键
-   * @param defaultValue - 默认值
-   * @returns 环境变量值或默认值
-   */
+ * API Operation
+ */
   private getBoolean(key: string, defaultValue: boolean): boolean {
     const value = process.env[key]
     if (value === undefined) {
@@ -141,92 +143,86 @@ export class ConfigService {
   }
 
   /**
-   * 获取环境变量
-   * @param key - 环境变量键
-   * @param defaultValue - 默认值
-   * @returns 环境变量值或默认值
-   */
+ * API Operation
+ */
   private getEnv(key: string, defaultValue: string): string {
     return process.env[key] || defaultValue
   }
 
   /**
-   * 获取配置对象
-   * @returns 应用配置
-   */
+ * API Operation
+ */
   getConfig(): AppConfig {
     return this.config
   }
 
   /**
-   * 获取服务端口
-   * @returns 端口号
-   */
+ * API Operation
+ */
   getPort(): number {
     return this.config.port
   }
 
   /**
-   * 获取环境模式
-   * @returns 环境模式
-   */
+ * API Operation
+ */
   getNodeEnv(): string {
     return this.config.nodeEnv
   }
 
   /**
-   * 是否为开发环境
-   * @returns 是否为开发环境
-   */
+ * API Operation
+ */
   isDevelopment(): boolean {
     return this.config.nodeEnv === 'development'
   }
 
   /**
-   * 是否为生产环境
-   * @returns 是否为生产环境
-   */
+ * API Operation
+ */
   isProduction(): boolean {
     return this.config.nodeEnv === 'production'
   }
 
   /**
-   * 获取 API 前缀
-   * @returns API 前缀
-   */
+ * API Operation
+ */
   getApiPrefix(): string {
     return this.config.apiPrefix
   }
 
   /**
-   * 获取数据库路径
-   * @returns 数据库路径
-   */
+ * API Operation
+ */
   getDatabasePath(): string {
     return this.config.databasePath
   }
 
   /**
-   * 获取 CORS 配置
-   * @returns CORS 配置
-   */
+ * API Operation
+ */
   getCorsConfig() {
     return this.config.cors
   }
 
   /**
-   * 获取 Swagger 配置
-   * @returns Swagger 配置
-   */
+ * API Operation
+ */
   getSwaggerConfig() {
     return this.config.swagger
   }
 
   /**
-   * 获取日志配置
-   * @returns 日志配置
-   */
+ * API Operation
+ */
   getLoggingConfig() {
     return this.config.logging
   }
 }
+
+
+
+
+
+
+

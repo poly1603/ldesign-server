@@ -1,5 +1,5 @@
-import { INodeManager, NodeVersion } from './node-manager.interface'
-import { ExecUtil } from '../../../utils/exec.util'
+import { INodeManager, NodeVersion } from './node-manager.interface.js'
+import { ExecUtil } from '../../../utils/exec.util.js'
 
 /**
  * nvs (Node Version Switcher) 管理器实现

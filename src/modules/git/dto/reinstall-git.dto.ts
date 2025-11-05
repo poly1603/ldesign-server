@@ -1,5 +1,5 @@
 import { IsOptional, IsEnum } from 'class-validator'
-import { PackageManagerType } from '../../../utils/package-manager.util'
+import { PackageManagerType } from '../../../utils/package-manager.util.js'
 
 /**
  * 重装 Git DTO

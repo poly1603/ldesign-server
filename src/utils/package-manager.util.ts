@@ -1,4 +1,4 @@
-import { ExecUtil } from './exec.util'
+import { ExecUtil } from './exec.util.js'
 
 /**
  * 包管理器类型
@@ -189,4 +189,14 @@ export class PackageManagerUtil {
     }
   }
 }
+
+
+
+
+
+
+
+
+
+
 

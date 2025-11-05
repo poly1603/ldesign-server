@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
-import { NodeController } from './node.controller'
-import { NodeService } from './node.service'
+import { NodeController } from './node.controller.js'
+import { NodeService } from './node.service.js'
 
 /**
  * Node 版本管理模块

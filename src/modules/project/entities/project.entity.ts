@@ -12,6 +12,11 @@ import {
 export type ProjectType = 'web' | 'api' | 'library' | 'mobile' | 'desktop' | 'other'
 
 /**
+ * 项目类别（基于 LDesign 工具）
+ */
+export type ProjectCategory = 'project' | 'library' | 'project-library' | 'other'
+
+/**
  * 项目实体
  */
 @Entity('projects')
@@ -41,10 +46,28 @@ export class Project {
   type: ProjectType
 
   /**
-   * 框架类型（如 vue、react、angular 等）
+   * 项目类别（基于 LDesign 工具：project/library/project-library）
+   */
+  @Column('text', { nullable: true })
+  category?: ProjectCategory
+
+  /**
+   * 框架类型（如 vue2、vue3、react、angular 等）
    */
   @Column('text', { nullable: true })
   framework?: string
+
+  /**
+   * 框架版本（如 2.x、3.x 等）
+   */
+  @Column('text', { nullable: true })
+  frameworkVersion?: string
+
+  /**
+   * 是否使用 TypeScript
+   */
+  @Column('boolean', { default: false })
+  isTypeScript: boolean
 
   /**
    * 包管理器（npm、pnpm、yarn）
@@ -63,6 +86,12 @@ export class Project {
    */
   @Column('text', { nullable: true })
   config?: string
+
+  /**
+   * 项目标签（JSON 字符串数组）
+   */
+  @Column('text', { nullable: true })
+  tags?: string
 
   /**
    * 创建时间

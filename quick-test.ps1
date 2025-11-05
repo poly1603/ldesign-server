@@ -79,3 +79,23 @@ if ($failed -eq 0) {
     Write-Host "⚠️  部分接口测试失败，请检查服务日志" -ForegroundColor Yellow
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

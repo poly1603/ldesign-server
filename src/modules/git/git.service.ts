@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
-import { ExecUtil } from '../../utils/exec.util'
-import { PackageManagerUtil } from '../../utils/package-manager.util'
+import { ExecUtil } from '../../utils/exec.util.js'
+import { PackageManagerUtil } from '../../utils/package-manager.util.js'
 
 /**
  * Git 状态信息

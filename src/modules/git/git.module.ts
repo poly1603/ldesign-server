@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common'
-import { GitController } from './git.controller'
-import { GitService } from './git.service'
+import { GitController } from './git.controller.js'
+import { GitService } from './git.service.js'
 
 /**
  * Git 管理模块

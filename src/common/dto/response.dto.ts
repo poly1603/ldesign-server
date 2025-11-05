@@ -1,39 +1,37 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 /**
- * 统一响应格式
- * 所有 API 接口统一使用此格式返回数据
+ * API Operation
  */
 export class ApiResponse<T = any> {
   /**
-   * 请求是否成功
-   * @example true
-   */
-  @ApiProperty({ description: '请求是否成功', example: true })
+ * API Operation
+ */
+  @ApiProperty({ description: '', example: true })
   success: boolean
 
   /**
-   * 响应数据
-   */
-  @ApiPropertyOptional({ description: '响应数据' })
+ * API Operation
+ */
+  @ApiPropertyOptional({ description: '' })
   data?: T
 
   /**
-   * 成功消息
-   */
-  @ApiPropertyOptional({ description: '成功消息', example: '操作成功' })
+ * API Operation
+ */
+  @ApiPropertyOptional({ description: '', example: '' })
   message?: string
 
   /**
-   * 错误代码
-   */
-  @ApiPropertyOptional({ description: '错误代码' })
+ * API Operation
+ */
+  @ApiPropertyOptional({ description: '' })
   code?: string
 
   /**
-   * 错误信息（仅在开发环境返回）
-   */
-  @ApiPropertyOptional({ description: '错误信息（仅开发环境）' })
+ * API Operation
+ */
+  @ApiPropertyOptional({ description: '' })
   error?: string
 }
 

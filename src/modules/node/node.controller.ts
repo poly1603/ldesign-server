@@ -8,15 +8,17 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common'
-import { NodeService } from './node.service'
-import { InstallNodeDto } from './dto/install-node.dto'
-import { SwitchNodeDto } from './dto/switch-node.dto'
-import { InstallManagerDto } from './dto/install-manager.dto'
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { NodeService } from './node.service.js'
+import { InstallNodeDto } from './dto/install-node.dto.js'
+import { SwitchNodeDto } from './dto/switch-node.dto.js'
+import { InstallManagerDto } from './dto/install-manager.dto.js'
 
 /**
  * Node 版本管理控制器
  */
-@Controller('node')
+@ApiTags('node')
+@Controller('api/node')
 export class NodeController {
   constructor(private readonly nodeService: NodeService) {}
 
@@ -25,6 +27,8 @@ export class NodeController {
    * @returns Node 版本列表
    */
   @Get('versions')
+  @ApiOperation({ summary: 'List installed Node versions' })
+  @ApiResponse({ status: 200, description: 'Versions listed' })
   async listVersions() {
     const versions = await this.nodeService.listVersions()
     return {
@@ -38,6 +42,8 @@ export class NodeController {
    * @returns 当前版本
    */
   @Get('current')
+  @ApiOperation({ summary: 'Get current Node version' })
+  @ApiResponse({ status: 200, description: 'Current version retrieved' })
   async getCurrentVersion() {
     const version = await this.nodeService.getCurrentVersion()
     return {
@@ -53,6 +59,8 @@ export class NodeController {
    * @returns 管理器列表
    */
   @Get('managers')
+  @ApiOperation({ summary: 'Get available Node managers' })
+  @ApiResponse({ status: 200, description: 'Managers listed' })
   async getAvailableManagers() {
     const managers = await this.nodeService.getAvailableManagers()
     return {
@@ -66,6 +74,8 @@ export class NodeController {
    * @returns 管理器状态列表
    */
   @Get('manager/status')
+  @ApiOperation({ summary: 'Get Node managers status' })
+  @ApiResponse({ status: 200, description: 'Status retrieved' })
   async getManagersStatus() {
     const statuses = await this.nodeService.getManagersStatus()
     return {
@@ -80,6 +90,8 @@ export class NodeController {
    * @returns 安装结果
    */
   @Post('manager/install')
+  @ApiOperation({ summary: 'Install Node manager' })
+  @ApiResponse({ status: 201, description: 'Manager installed' })
   @HttpCode(HttpStatus.CREATED)
   async installManager(@Body() installManagerDto: InstallManagerDto) {
     const result = await this.nodeService.installManager(installManagerDto.managerType)
@@ -95,6 +107,8 @@ export class NodeController {
    * @returns 安装结果
    */
   @Post('install')
+  @ApiOperation({ summary: 'Install Node version' })
+  @ApiResponse({ status: 200, description: 'Version installed' })
   async installVersion(@Body() installNodeDto: InstallNodeDto) {
     const result = await this.nodeService.installVersion(installNodeDto.version)
     return {
@@ -109,6 +123,8 @@ export class NodeController {
    * @returns 切换结果
    */
   @Post('switch')
+  @ApiOperation({ summary: 'Switch Node version' })
+  @ApiResponse({ status: 200, description: 'Version switched' })
   async switchVersion(@Body() switchNodeDto: SwitchNodeDto) {
     const result = await this.nodeService.switchVersion(switchNodeDto.version)
     return {
@@ -123,6 +139,8 @@ export class NodeController {
    * @returns 删除结果
    */
   @Delete('versions/:version')
+  @ApiOperation({ summary: 'Remove Node version' })
+  @ApiResponse({ status: 200, description: 'Version removed' })
   async removeVersion(@Param('version') version: string) {
     const result = await this.nodeService.removeVersion(version)
     return {
@@ -136,6 +154,8 @@ export class NodeController {
    * @returns 可用版本列表
    */
   @Get('versions/available')
+  @ApiOperation({ summary: 'List available Node versions' })
+  @ApiResponse({ status: 200, description: 'Available versions listed' })
   async listAvailableVersions() {
     const versions = await this.nodeService.listAvailableVersions()
     return {
@@ -143,5 +163,6 @@ export class NodeController {
       data: versions,
     }
   }
+
 }
 

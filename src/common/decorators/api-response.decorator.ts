@@ -1,6 +1,6 @@
 import { applyDecorators, Type } from '@nestjs/common'
 import { ApiOkResponse, ApiExtraModels, getSchemaPath } from '@nestjs/swagger'
-import { ApiResponse } from '../dto/response.dto'
+import { ApiResponse } from '../dto/response.dto.js'
 
 /**
  * API 响应装饰器

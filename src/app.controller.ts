@@ -1,20 +1,26 @@
 import { Controller, Get } from '@nestjs/common'
 import { ApiTags, ApiOperation } from '@nestjs/swagger'
-import { ApiStandardResponse } from './common/decorators/api-response.decorator'
-import { ConfigService } from './config/config.service'
-import { os } from 'node:os'
-
+import { ConfigService } from './config/config.service.js'
+import * as os from 'os'
 /**
- * 健康检查响应数据
+ * API Operation
  */
 class HealthDataDto {
-  /** 服务状态 */
+  /**
+ * API Operation
+ */
   status: string
-  /** 时间戳 */
+  /**
+ * API Operation
+ */
   timestamp: number
-  /** 运行时长（秒） */
+  /**
+ * API Operation
+ */
   uptime: number
-  /** 系统信息 */
+  /**
+ * API Operation
+ */
   system: {
     platform: string
     arch: string
@@ -28,8 +34,7 @@ class HealthDataDto {
 }
 
 /**
- * 应用根控制器
- * 提供健康检查等基础接口
+ * API Operation
  */
 @ApiTags('health')
 @Controller()
@@ -37,16 +42,10 @@ export class AppController {
   constructor(private readonly configService: ConfigService) {}
 
   /**
-   * 健康检查接口
-   * 用于检查服务是否正常运行，返回服务状态和系统信息
-   * @returns 健康状态信息
-   */
+ * API Operation
+ */
   @Get('health')
-  @ApiOperation({
-    summary: '健康检查',
-    description: '检查服务运行状态和系统信息',
-  })
-  @ApiStandardResponse(HealthDataDto, '服务健康状态')
+  @ApiOperation({ summary: 'API Operation' })
   health() {
     const memory = os.totalmem()
     const freeMemory = os.freemem()

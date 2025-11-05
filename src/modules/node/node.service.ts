@@ -1,9 +1,9 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
-import { INodeManager, NodeVersion } from './managers/node-manager.interface'
-import { NvmWindowsManager } from './managers/nvm-windows.manager'
-import { NvsManager } from './managers/nvs.manager'
-import { FnmManager } from './managers/fnm.manager'
-import { PackageManagerUtil } from '../../utils/package-manager.util'
+import { INodeManager, NodeVersion } from './managers/node-manager.interface.js'
+import { NvmWindowsManager } from './managers/nvm-windows.manager.js'
+import { NvsManager } from './managers/nvs.manager.js'
+import { FnmManager } from './managers/fnm.manager.js'
+import { PackageManagerUtil } from '../../utils/package-manager.util.js'
 
 /**
  * Node 管理器类型
@@ -30,7 +30,7 @@ export class NodeService {
 
   constructor() {
     // 初始化所有管理器
-    this.managers = new Map([
+    this.managers = new Map<NodeManagerType, INodeManager>([
       ['nvm-windows', new NvmWindowsManager()],
       ['nvs', new NvsManager()],
       ['fnm', new FnmManager()],

@@ -62,3 +62,23 @@ export class ForbiddenBusinessException extends BusinessException {
     super(message, code, HttpStatus.FORBIDDEN)
   }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

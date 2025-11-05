@@ -1,72 +1,96 @@
-# 使用官方 Node.js 运行时作为基础镜像
-FROM node:20-alpine AS builder
+# 多阶段构建 - 阶段1: 依赖安装
+FROM node:20-alpine AS deps
+WORKDIR /app
 
-# 设置工作目录
+# 安装 pnpm 和必要的构建工具
+RUN corepack enable && corepack prepare pnpm@latest --activate && \
+    apk add --no-cache python3 make g++
+
+# 复制包管理文件
+COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
+COPY ../../package.json ./../
+COPY ../../pnpm-workspace.yaml ./../
+COPY tools/server/package.json ./tools/server/
+
+# 安装生产依赖
+RUN pnpm install --frozen-lockfile --prod
+
+# 多阶段构建 - 阶段2: 构建
+FROM node:20-alpine AS builder
 WORKDIR /app
 
 # 安装 pnpm
 RUN corepack enable && corepack prepare pnpm@latest --activate
 
-# 复制包管理文件
+# 复制包管理文件和源代码
 COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
-
-# 复制 monorepo 根目录的 package.json（如果存在）
 COPY ../../package.json ./../
 COPY ../../pnpm-workspace.yaml ./../
+COPY tools/server ./tools/server
 
-# 复制当前包的源代码
-COPY tools/server/package.json ./tools/server/
-COPY tools/server/tsconfig*.json ./tools/server/
-COPY tools/server/nest-cli.json ./tools/server/
-
-# 安装依赖（仅在依赖变化时执行）
+# 安装所有依赖（包括开发依赖）
 RUN pnpm install --frozen-lockfile
-
-# 复制源代码
-COPY tools/server/src ./tools/server/src
 
 # 构建应用
 WORKDIR /app/tools/server
 RUN pnpm build
 
-# 生产阶段
+# 多阶段构建 - 阶段3: 生产镜像
 FROM node:20-alpine AS production
-
-# 设置工作目录
 WORKDIR /app
 
-# 安装 pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# 安装 dumb-init 用于正确处理信号
+RUN apk add --no-cache dumb-init
 
-# 复制包管理文件
-COPY package.json pnpm-lock.yaml* pnpm-workspace.yaml* ./
-
-# 仅安装生产依赖
-RUN pnpm install --frozen-lockfile --prod
-
-# 从构建阶段复制构建产物
-COPY --from=builder /app/tools/server/dist ./dist
-
-# 复制必要的配置文件
-COPY tools/server/package.json ./
-
-# 创建非 root 用户
+# 创建非 root 用户和必要目录
 RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+    adduser -S nestjs -u 1001 && \
+    mkdir -p logs data && \
+    chown -R nestjs:nodejs logs data
 
-# 更改文件所有者
-RUN chown -R nodejs:nodejs /app
+# 设置环境变量
+ENV NODE_ENV=production \
+    PORT=3000 \
+    NODE_OPTIONS="--max-old-space-size=2048 --enable-source-maps" \
+    UV_THREADPOOL_SIZE=128
+
+# 复制构建产物和生产依赖
+COPY --from=deps --chown=nestjs:nodejs /app/node_modules ./node_modules
+COPY --from=builder --chown=nestjs:nodejs /app/tools/server/dist ./dist
+COPY --from=builder --chown=nestjs:nodejs /app/tools/server/package.json ./
+COPY --chown=nestjs:nodejs tools/server/ecosystem.config.js ./ecosystem.config.js 2>/dev/null || :
 
 # 切换到非 root 用户
-USER nodejs
+USER nestjs
 
 # 暴露端口
 EXPOSE 3000
 
-# 设置环境变量
-ENV NODE_ENV=production
-ENV PORT=3000
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1))"
 
-# 启动应用
+# 使用 dumb-init 启动应用
+ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/main.js"]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

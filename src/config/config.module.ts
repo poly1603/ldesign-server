@@ -1,5 +1,5 @@
 import { Module, Global } from '@nestjs/common'
-import { ConfigService } from './config.service'
+import { ConfigService } from './config.service.js'
 
 /**
  * 全局配置模块
@@ -11,3 +11,13 @@ import { ConfigService } from './config.service'
   exports: [ConfigService],
 })
 export class ConfigModule {}
+
+
+
+
+
+
+
+
+
+

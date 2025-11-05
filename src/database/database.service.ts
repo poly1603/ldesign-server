@@ -3,42 +3,40 @@ import { InjectDataSource } from '@nestjs/typeorm'
 import { DataSource } from 'typeorm'
 
 /**
- * 数据库服务
- * 负责数据库初始化和维护
+ * API Operation
  */
 @Injectable()
 export class DatabaseService implements OnModuleInit {
   constructor(@InjectDataSource() private dataSource: DataSource) {}
 
   /**
-   * 模块初始化时执行
-   */
+ * API Operation
+ */
   async onModuleInit() {
     await this.initializeDatabase()
   }
 
   /**
-   * 初始化数据库
-   */
+ * API Operation
+ */
   private async initializeDatabase(): Promise<void> {
     try {
-      // 检查连接状态
+      // Operation
       if (this.dataSource.isInitialized) {
-        console.log('✅ 数据库连接成功')
+        console.log(' ')
       } else {
         await this.dataSource.initialize()
-        console.log('✅ 数据库连接成功')
+        console.log(' ')
       }
     } catch (error) {
-      console.error('❌ 数据库连接失败:', error)
+      console.error(' :', error)
       throw error
     }
   }
 
   /**
-   * 获取数据源
-   * @returns 数据源实例
-   */
+ * API Operation
+ */
   getDataSource(): DataSource {
     return this.dataSource
   }

@@ -1,10 +1,12 @@
 import { Controller, Get, Post, Body } from '@nestjs/common'
-import { SystemService } from './system.service'
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { SystemService } from './system.service.js'
 
 /**
  * 系统工具控制器
  */
-@Controller('system')
+@ApiTags('system')
+@Controller('api/system')
 export class SystemController {
   constructor(private readonly systemService: SystemService) {}
 
@@ -14,6 +16,8 @@ export class SystemController {
    * @returns 验证结果
    */
   @Post('validate-path')
+  @ApiOperation({ summary: 'Validate file system path' })
+  @ApiResponse({ status: 200, description: 'Path validated' })
   validatePath(
     @Body()
     body: {
@@ -40,16 +44,19 @@ export class SystemController {
   }
 
   /**
-   * 获取目录选择器提示信息
-   * @returns 目录选择器信息
+   * 打开系统目录选择器
+   * @param body - 请求体，包含 defaultPath（可选）
+   * @returns 选择的目录路径
    */
-  @Get('directory-picker')
-  getDirectoryPickerInfo() {
-    const info = this.systemService.getDirectoryPickerInfo()
+  @Post('open-directory-picker')
+  @ApiOperation({ summary: 'Open system directory picker' })
+  @ApiResponse({ status: 200, description: 'Directory picker opened' })
+  async openDirectoryPicker(@Body() body?: { defaultPath?: string }) {
+    const result = await this.systemService.openDirectoryPicker(body?.defaultPath)
     return {
-      success: true,
-      data: info,
+      success: result.success,
+      data: result.path ? { path: result.path } : undefined,
+      message: result.message,
     }
   }
 }
-

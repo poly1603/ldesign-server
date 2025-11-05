@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
-import { DatabaseService } from './database.service'
-import { Project } from '../modules/project/entities/project.entity'
+import { DatabaseService } from './database.service.js'
+import { Project } from '../modules/project/entities/project.entity.js'
 
 /**
  * 数据库模块
