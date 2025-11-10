@@ -23,6 +23,22 @@ export class NodeController {
   constructor(private readonly nodeService: NodeService) {}
 
   /**
+   * 获取可用版本列表（从远程）
+   * IMPORTANT: Must be before @Get('versions') to avoid route conflict
+   * @returns 可用版本列表
+   */
+  @Get('versions/available')
+  @ApiOperation({ summary: 'List available Node versions' })
+  @ApiResponse({ status: 200, description: 'Available versions listed' })
+  async listAvailableVersions() {
+    const versions = await this.nodeService.listAvailableVersions()
+    return {
+      success: true,
+      data: versions,
+    }
+  }
+
+  /**
    * 获取已安装的 Node 版本列表
    * @returns Node 版本列表
    */
@@ -98,6 +114,7 @@ export class NodeController {
     return {
       success: result.success,
       message: result.message,
+      data: result.data,
     }
   }
 
@@ -146,21 +163,6 @@ export class NodeController {
     return {
       success: result.success,
       message: result.message,
-    }
-  }
-
-  /**
-   * 获取可用版本列表（从远程）
-   * @returns 可用版本列表
-   */
-  @Get('versions/available')
-  @ApiOperation({ summary: 'List available Node versions' })
-  @ApiResponse({ status: 200, description: 'Available versions listed' })
-  async listAvailableVersions() {
-    const versions = await this.nodeService.listAvailableVersions()
-    return {
-      success: true,
-      data: versions,
     }
   }
 

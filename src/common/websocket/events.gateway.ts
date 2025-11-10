@@ -119,21 +119,18 @@ export class EventsGateway
   broadcastToRoom(room: string, event: string, data: any) {
     // 安全检查：确保 server 和 sockets 都已初始化
     if (!this.server || !this.server.sockets || !this.server.sockets.adapter) {
-      // 如果 WebSocket 服务器未初始化，记录警告（用于调试）
-      this.logger.warn(`Cannot broadcast to room ${room}, event ${event}: WebSocket server not initialized`)
+      // 如果 WebSocket 服务器未初始化，静默失败（不记录警告，避免日志噪音）
+      // 前端会通过轮询机制获取日志，所以这不是致命问题
       return
     }
 
     try {
       const clientsCount = this.server.sockets.adapter.rooms.get(room)?.size || 0
-      // 记录所有广播尝试（用于调试）
+      // 只在有客户端连接时记录日志（减少日志噪音）
       if (clientsCount > 0) {
-        this.logger.log(`[Broadcast] Broadcasting to room: ${room}, event: ${event}, clients: ${clientsCount}`)
-      } else {
-        this.logger.warn(`[Broadcast] No clients in room ${room} for event ${event}`)
+        this.logger.debug(`[Broadcast] Broadcasting to room: ${room}, event: ${event}, clients: ${clientsCount}`)
       }
       this.server.to(room).emit(event, data)
-      this.logger.debug(`[Broadcast] Event ${event} emitted to room ${room}`)
     } catch (error: any) {
       this.logger.error(`[Broadcast] Failed to broadcast to room ${room}, event ${event}: ${error.message}`)
     }

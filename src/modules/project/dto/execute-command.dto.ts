@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsNotEmpty, MaxLength } from 'class-validator'
+import { IsString, IsOptional, IsNotEmpty, MaxLength, IsIn } from 'class-validator'
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger'
 
 /**
@@ -20,6 +20,23 @@ export class ExecuteCommandDto {
   @IsNotEmpty({ message: 'Command name is required' })
   @MaxLength(100, { message: 'Command name must not exceed 100 characters' })
   command: string
+
+  /**
+   * Environment name (development, production, test, staging, preview)
+   * Only applicable for dev command when using @ldesign/launcher
+   * @example "development"
+   */
+  @ApiPropertyOptional({
+    description: 'Environment name (development, production, test, staging, preview). Only applicable for dev command.',
+    example: 'development',
+    enum: ['development', 'production', 'test', 'staging', 'preview'],
+  })
+  @IsOptional()
+  @IsString()
+  @IsIn(['development', 'production', 'test', 'staging', 'preview'], {
+    message: 'Environment must be one of: development, production, test, staging, preview',
+  })
+  environment?: string
 
   /**
    * Additional command-line arguments to pass to the script

@@ -14,6 +14,8 @@ import {
   LogEventData,
   SystemEventData,
   IntegrationEventData,
+  VerdaccioEventData,
+  NodeManagerInstallEventData,
 } from '../types/websocket-events.types.js'
 
 /**
@@ -310,5 +312,64 @@ export class WebSocketEventsService {
  */
   sendEvent<T>(type: WebSocketEventType, data: T, room?: string) {
     this.broadcast(type, data, room)
+  }
+
+  // Verdaccio 事件
+
+  sendVerdaccioRestartStart(data: VerdaccioEventData) {
+    const room = this.getRoom(RoomType.VERDACCIO, data.registryId)
+    this.broadcast(WebSocketEventType.VERDACCIO_RESTART_START, data, room)
+  }
+
+  sendVerdaccioRestartStopping(data: VerdaccioEventData) {
+    const room = this.getRoom(RoomType.VERDACCIO, data.registryId)
+    this.broadcast(WebSocketEventType.VERDACCIO_RESTART_STOPPING, data, room)
+  }
+
+  sendVerdaccioRestartStarting(data: VerdaccioEventData) {
+    const room = this.getRoom(RoomType.VERDACCIO, data.registryId)
+    this.broadcast(WebSocketEventType.VERDACCIO_RESTART_STARTING, data, room)
+  }
+
+  sendVerdaccioRestartComplete(data: VerdaccioEventData) {
+    const room = this.getRoom(RoomType.VERDACCIO, data.registryId)
+    this.broadcast(WebSocketEventType.VERDACCIO_RESTART_COMPLETE, data, room)
+  }
+
+  sendVerdaccioRestartError(data: VerdaccioEventData) {
+    const room = this.getRoom(RoomType.VERDACCIO, data.registryId)
+    this.broadcast(WebSocketEventType.VERDACCIO_RESTART_ERROR, data, room)
+  }
+
+  sendVerdaccioConfigSaved(data: VerdaccioEventData) {
+    const room = this.getRoom(RoomType.VERDACCIO, data.registryId)
+    this.broadcast(WebSocketEventType.VERDACCIO_CONFIG_SAVED, data, room)
+  }
+
+  // Node 管理器安装事件
+
+  sendNodeManagerInstallStart(data: NodeManagerInstallEventData) {
+    const room = this.getRoom(RoomType.NODE)
+    this.broadcast(WebSocketEventType.NODE_MANAGER_INSTALL_START, data, room)
+  }
+
+  sendNodeManagerInstallProgress(data: NodeManagerInstallEventData) {
+    const room = this.getRoom(RoomType.NODE)
+    this.broadcast(WebSocketEventType.NODE_MANAGER_INSTALL_PROGRESS, data, room)
+  }
+
+  sendNodeManagerInstallLog(data: NodeManagerInstallEventData) {
+    const room = this.getRoom(RoomType.NODE)
+    this.broadcast(WebSocketEventType.NODE_MANAGER_INSTALL_LOG, data, room)
+  }
+
+  sendNodeManagerInstallComplete(data: NodeManagerInstallEventData) {
+    const room = this.getRoom(RoomType.NODE)
+    this.broadcast(WebSocketEventType.NODE_MANAGER_INSTALL_COMPLETE, data, room)
+  }
+
+  sendNodeManagerInstallError(data: NodeManagerInstallEventData) {
+    const room = this.getRoom(RoomType.NODE)
+    this.broadcast(WebSocketEventType.NODE_MANAGER_INSTALL_ERROR, data, room)
   }
 }

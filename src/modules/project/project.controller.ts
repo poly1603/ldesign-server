@@ -174,6 +174,25 @@ export class ProjectController {
   }
 
   /**
+   * 在系统文件管理器中打开项目文件夹
+   * @param id - 项目 ID
+   * @returns 打开结果
+   * 
+   * 注意：这个路由必须放在 @Post(':id/open') 之前，因为 NestJS 按顺序匹配路由
+   * 如果 ':id/open' 在前，会先匹配到 'open-folder' 路径
+   */
+  @Post(':id/open-folder')
+  @ApiOperation({ summary: 'Open project folder in system file explorer' })
+  @ApiResponse({ status: 200, description: 'Folder opened' })
+  async openFolder(@Param('id') id: string) {
+    await this.projectService.openFolder(id)
+    return {
+      success: true,
+      message: '文件夹已打开',
+    }
+  }
+
+  /**
    * 更新项目最后打开时间
    * @param id - 项目 ID
    */
@@ -201,7 +220,11 @@ export class ProjectController {
     @Param('id') id: string,
     @Body() executeCommandDto: ExecuteCommandDto,
   ) {
-    const execution = await this.projectCommandService.executeCommand(id, executeCommandDto.command)
+    const execution = await this.projectCommandService.executeCommand(
+      id,
+      executeCommandDto.command,
+      executeCommandDto.environment,
+    )
     return {
       success: true,
       data: execution,
@@ -233,19 +256,94 @@ export class ProjectController {
    * 获取最新的命令执行记录
    * @param id - 项目 ID
    * @param command - 命令名称
+   * @param environment - 环境名称（可选）
    * @returns 最新的执行记录
    */
   @Get(':id/command/:command/latest')
   @ApiOperation({ summary: 'Get latest command execution' })
   @ApiResponse({ status: 200, description: 'Latest execution retrieved' })
+  @ApiQuery({ name: 'environment', required: false, description: 'Environment name' })
   async getLatestExecution(
     @Param('id') id: string,
     @Param('command') command: string,
+    @Query('environment') environment?: string,
   ) {
-    const execution = await this.projectCommandService.getLatestExecution(id, command)
+    const execution = await this.projectCommandService.getLatestExecution(id, command, environment)
     return {
       success: true,
       data: execution,
+    }
+  }
+
+  /**
+   * 获取项目的所有运行中的命令执行记录
+   * @param id - 项目 ID
+   * @param command - 命令名称（可选）
+   * @returns 运行中的执行记录列表
+   */
+  @Get(':id/command/running')
+  @ApiOperation({ summary: 'Get all running command executions' })
+  @ApiResponse({ status: 200, description: 'Running executions retrieved' })
+  @ApiQuery({ name: 'command', required: false, description: 'Command name' })
+  async getRunningExecutions(
+    @Param('id') id: string,
+    @Query('command') command?: string,
+  ) {
+    const executions = await this.projectCommandService.getRunningExecutions(id, command)
+    return {
+      success: true,
+      data: executions,
+    }
+  }
+
+  /**
+   * 获取项目的所有执行记录（包括历史记录）
+   * @param id - 项目 ID
+   * @param command - 命令名称（可选）
+   * @param status - 状态筛选（可选）
+   * @param limit - 返回记录数限制（默认 50）
+   * @returns 执行记录列表
+   */
+  @Get(':id/command/executions')
+  @ApiOperation({ summary: 'Get all command executions (including history)' })
+  @ApiResponse({ status: 200, description: 'Executions retrieved' })
+  @ApiQuery({ name: 'command', required: false, description: 'Command name' })
+  @ApiQuery({ name: 'status', required: false, enum: ['pending', 'running', 'completed', 'failed', 'stopped'], description: 'Status filter' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Limit number of records (default: 50)' })
+  async getExecutions(
+    @Param('id') id: string,
+    @Query('command') command?: string,
+    @Query('status') status?: 'pending' | 'running' | 'completed' | 'failed' | 'stopped',
+    @Query('limit') limit?: number,
+  ) {
+    const executions = await this.projectCommandService.getExecutions(id, command, status, limit ? Number(limit) : 50)
+    return {
+      success: true,
+      data: executions,
+    }
+  }
+
+  /**
+   * 获取项目的历史执行记录（已完成、失败、停止的记录）
+   * @param id - 项目 ID
+   * @param command - 命令名称（可选）
+   * @param limit - 返回记录数限制（默认 100）
+   * @returns 历史执行记录列表
+   */
+  @Get(':id/command/history')
+  @ApiOperation({ summary: 'Get command execution history' })
+  @ApiResponse({ status: 200, description: 'History executions retrieved' })
+  @ApiQuery({ name: 'command', required: false, description: 'Command name' })
+  @ApiQuery({ name: 'limit', required: false, type: Number, description: 'Limit number of records (default: 100)' })
+  async getHistoryExecutions(
+    @Param('id') id: string,
+    @Query('command') command?: string,
+    @Query('limit') limit?: number,
+  ) {
+    const executions = await this.projectCommandService.getHistoryExecutions(id, command, limit ? Number(limit) : 100)
+    return {
+      success: true,
+      data: executions,
     }
   }
 
@@ -266,6 +364,75 @@ export class ProjectController {
     return {
       success: true,
       message: '执行记录已清除',
+    }
+  }
+
+  /**
+   * 检查项目的打包状态
+   * @param id - 项目 ID
+   * @param environment - 环境名称
+   * @returns 打包状态信息
+   */
+  @Get(':id/build-status')
+  @ApiOperation({ summary: 'Check project build status' })
+  @ApiResponse({ status: 200, description: 'Build status retrieved' })
+  @ApiQuery({ name: 'environment', required: false, description: 'Environment name' })
+  async getBuildStatus(
+    @Param('id') id: string,
+    @Query('environment') environment?: string,
+  ) {
+    const status = await this.projectService.getBuildStatus(id, environment || 'production')
+    return {
+      success: true,
+      data: status,
+    }
+  }
+
+  /**
+   * 获取所有环境的打包状态
+   * @param id - 项目 ID
+   * @returns 所有已打包的环境列表
+   */
+  @Get(':id/build-statuses')
+  @ApiOperation({ summary: 'Get all environments build statuses' })
+  @ApiResponse({ status: 200, description: 'All build statuses retrieved' })
+  async getAllBuildStatuses(@Param('id') id: string) {
+    const statuses = await this.projectService.getAllBuildStatuses(id)
+    return {
+      success: true,
+      data: statuses,
+    }
+  }
+
+  /**
+   * 获取项目统计数据
+   * @param id - 项目 ID
+   * @returns 项目统计数据
+   */
+  @Get(':id/stats')
+  @ApiOperation({ summary: 'Get project statistics' })
+  @ApiResponse({ status: 200, description: 'Project statistics retrieved' })
+  async getProjectStats(@Param('id') id: string) {
+    const stats = await this.projectService.getProjectStats(id)
+    return {
+      success: true,
+      data: stats,
+    }
+  }
+
+  /**
+   * 获取库项目的打包产物信息
+   * @param id - 项目 ID
+   * @returns 打包产物信息
+   */
+  @Get(':id/library-build-status')
+  @ApiOperation({ summary: 'Get library build artifacts status' })
+  @ApiResponse({ status: 200, description: 'Library build status retrieved' })
+  async getLibraryBuildStatus(@Param('id') id: string) {
+    const status = await this.projectService.getLibraryBuildStatus(id)
+    return {
+      success: true,
+      data: status,
     }
   }
 }

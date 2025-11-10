@@ -35,8 +35,12 @@ import { IntegrationModule } from './modules/integration/integration.module.js'
 import { BatchModule } from './modules/batch/batch.module.js'
 import { FontModule } from './modules/font/font.module.js'
 import { ToolManagerModule } from './modules/tool-manager/tool-manager.module.js'
+import { TypeScriptModule } from './modules/typescript/typescript.module.js'
+import { PackageModule } from './modules/package/package.module.js'
+import { NpmModule } from './modules/npm/npm.module.js'
 import { Project } from './modules/project/entities/project.entity.js'
 import { CommandExecution } from './modules/project/entities/command-execution.entity.js'
+import { Document } from './modules/typescript/entities/document.entity.js'
 import { LoggerMiddleware } from './common/middleware/logger.middleware.js'
 import { WebSocketModule } from './common/websocket/websocket.module.js'
 import { CacheModule } from './common/cache/cache.module.js'
@@ -56,7 +60,7 @@ import { ThrottleModule } from './common/throttle/throttle.module.js'
       useFactory: (configService: ConfigService) => ({
         type: 'better-sqlite3',
         database: configService.getDatabasePath(),
-        entities: [Project, CommandExecution],
+        entities: [Project, CommandExecution, Document],
         synchronize: !configService.isProduction(),
         logging: configService.isDevelopment() ? ['query', 'error'] : ['error'],
         // SQLite 性能优化
@@ -116,6 +120,9 @@ import { ThrottleModule } from './common/throttle/throttle.module.js'
     BatchModule,
     FontModule,
     ToolManagerModule,
+    TypeScriptModule,
+    PackageModule,
+    NpmModule,
   ],
   controllers: [AppController],
 })

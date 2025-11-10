@@ -75,6 +75,21 @@ export enum WebSocketEventType {
   INTEGRATION_GITLAB = 'integration:gitlab',
   INTEGRATION_DOCKER = 'integration:docker',
   INTEGRATION_JENKINS = 'integration:jenkins',
+  
+  // Verdaccio 事件
+  VERDACCIO_RESTART_START = 'verdaccio:restart:start',
+  VERDACCIO_RESTART_STOPPING = 'verdaccio:restart:stopping',
+  VERDACCIO_RESTART_STARTING = 'verdaccio:restart:starting',
+  VERDACCIO_RESTART_COMPLETE = 'verdaccio:restart:complete',
+  VERDACCIO_RESTART_ERROR = 'verdaccio:restart:error',
+  VERDACCIO_CONFIG_SAVED = 'verdaccio:config:saved',
+  
+  // Node 管理器安装事件
+  NODE_MANAGER_INSTALL_START = 'node:manager:install:start',
+  NODE_MANAGER_INSTALL_PROGRESS = 'node:manager:install:progress',
+  NODE_MANAGER_INSTALL_LOG = 'node:manager:install:log',
+  NODE_MANAGER_INSTALL_COMPLETE = 'node:manager:install:complete',
+  NODE_MANAGER_INSTALL_ERROR = 'node:manager:install:error',
 }
 
 // 房间类型
@@ -87,6 +102,8 @@ export enum RoomType {
   JOB = 'job',
   MONITOR = 'monitor',
   SYSTEM = 'system',
+  VERDACCIO = 'verdaccio',
+  NODE = 'node',
   GLOBAL = 'global',
 }
 
@@ -213,4 +230,32 @@ export interface IntegrationEventData {
   message?: string
   error?: string
   data?: any
+}
+
+// Verdaccio 事件数据
+export interface VerdaccioEventData {
+  registryId?: string
+  port?: number
+  status: 'stopping' | 'stopped' | 'starting' | 'started' | 'completed' | 'failed'
+  message?: string
+  error?: string
+  progress?: number
+  logs?: string[]
+  url?: string
+}
+
+export interface NodeManagerInstallLog {
+  type: 'stdout' | 'stderr' | 'info' | 'error'
+  content: string
+}
+
+export interface NodeManagerInstallEventData {
+  taskId: string
+  managerType: string
+  managerName: string
+  status: 'running' | 'completed' | 'failed'
+  progress?: number
+  message?: string
+  error?: string
+  log?: NodeManagerInstallLog
 }

@@ -4,6 +4,7 @@ import {
   PrimaryColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  Index,
 } from 'typeorm'
 
 /**
@@ -20,6 +21,11 @@ export type ProjectCategory = 'project' | 'library' | 'project-library' | 'other
  * 项目实体
  */
 @Entity('projects')
+@Index('idx_project_name', ['name'])
+@Index('idx_project_type_category', ['type', 'category'])
+@Index('idx_project_framework', ['framework'])
+@Index('idx_project_last_opened', ['lastOpenedAt'])
+@Index('idx_project_created_at', ['createdAt'])
 export class Project {
   /**
    * 项目 ID（UUID）

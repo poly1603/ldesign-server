@@ -23,6 +23,10 @@ export type CommandStatus = 'pending' | 'running' | 'completed' | 'failed' | 'st
 @Index(['createdAt']) // Index for sorting by creation date
 @Index(['projectId', 'command']) // Composite index for common queries
 @Index(['projectId', 'status']) // Composite index for filtering project commands by status
+@Index(['projectId', 'command', 'environment']) // Composite index for filtering by project, command and environment
+@Index(['projectId', 'command', 'status']) // Composite index for filtering by project, command and status
+@Index(['completedAt']) // Index for filtering by completion time
+@Index(['duration']) // Index for filtering by duration
 export class CommandExecution {
   /**
    * Execution ID (UUID)
@@ -41,6 +45,13 @@ export class CommandExecution {
    */
   @Column('text')
   command: string
+
+  /**
+   * Environment name (e.g., development, production, staging, test, preview)
+   * Used to distinguish multiple instances of the same command running in different environments
+   */
+  @Column('text', { nullable: true })
+  environment?: string
 
   /**
    * Full command line executed
@@ -95,6 +106,13 @@ export class CommandExecution {
    */
   @Column('integer', { nullable: true })
   completedAt?: number
+
+  /**
+   * Execution duration in milliseconds
+   * Calculated as completedAt - createdAt (or updatedAt - createdAt for running commands)
+   */
+  @Column('integer', { nullable: true })
+  duration?: number
 }
 
 

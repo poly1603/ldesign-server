@@ -26,7 +26,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<Response>()
     const request = ctx.getRequest<Request>()
-    const { method, url, ip } = request
+    const { method, url, ip, headers } = request
+    
+    // Generate or use existing request ID for tracing
+    const requestId = (headers['x-request-id'] as string) || `req-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
     let status = HttpStatus.INTERNAL_SERVER_ERROR
     let message = 'Internal server error'
@@ -49,7 +52,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       details = exceptionResponse.details
 
       this.logger.warn(
-        `Business exception: ${message} (code: ${code}) - ${method} ${url}`,
+        `[${requestId}] Business exception: ${message} (code: ${code}) - ${method} ${url}`,
       )
     }
     else if (exception instanceof HttpException) {
@@ -71,11 +74,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       // Log based on status code
       if (status >= 500) {
         this.logger.error(
-          `HTTP exception (${status}): ${message} - ${method} ${url}`,
+          `[${requestId}] HTTP exception (${status}): ${message} - ${method} ${url}`,
         )
       } else {
         this.logger.warn(
-          `HTTP exception (${status}): ${message} - ${method} ${url}`,
+          `[${requestId}] HTTP exception (${status}): ${message} - ${method} ${url}`,
         )
       }
     }
@@ -86,7 +89,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
 
       // Log unhandled errors with full details
       this.logger.error(
-        `Unhandled exception: ${message} - ${method} ${url} - ${ip}`,
+        `[${requestId}] Unhandled exception: ${message} - ${method} ${url} - ${ip}`,
         exception.stack,
       )
 
@@ -100,7 +103,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       // Non-Error exceptions (shouldn't happen, but handle gracefully)
       message = String(exception) || 'An unknown error occurred'
       this.logger.error(
-        `Unknown exception type: ${message} - ${method} ${url}`,
+        `[${requestId}] Unknown exception type: ${message} - ${method} ${url}`,
       )
     }
 
@@ -113,14 +116,19 @@ export class HttpExceptionFilter implements ExceptionFilter {
       ...(process.env.NODE_ENV === 'development' && error && { error }),
     }
     
-    // Add timestamp separately to avoid type error
-    const responseWithTimestamp = {
+    // Add timestamp and request ID separately to avoid type error
+    const responseWithMeta = {
       ...apiResponse,
       timestamp: new Date().toISOString(),
+      requestId,
+      path: url,
     }
 
+    // Set request ID in response header for client-side tracking
+    response.setHeader('X-Request-ID', requestId)
+
     // Send response
-    response.status(status).json(responseWithTimestamp)
+    response.status(status).json(responseWithMeta)
   }
 }
 

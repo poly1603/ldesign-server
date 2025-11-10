@@ -5,12 +5,15 @@ import { ProjectService } from './project.service.js'
 import { ProjectCommandService } from './project-command.service.js'
 import { Project } from './entities/project.entity.js'
 import { CommandExecution } from './entities/command-execution.entity.js'
+import { BuilderOutputDir } from '../package/entities/builder-output-dir.entity.js'
 
 /**
  * 项目管理模块
  */
 @Module({
-  imports: [TypeOrmModule.forFeature([Project, CommandExecution])],
+  imports: [
+    TypeOrmModule.forFeature([Project, CommandExecution, BuilderOutputDir]),
+  ],
   controllers: [ProjectController],
   providers: [ProjectService, ProjectCommandService],
   exports: [ProjectService, ProjectCommandService],

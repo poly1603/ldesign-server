@@ -7,6 +7,8 @@ export enum NodeManagerTypeEnum {
   NVM_WINDOWS = 'nvm-windows',
   NVS = 'nvs',
   FNM = 'fnm',
+  VOLTA = 'volta',
+  MISE = 'mise',
 }
 
 /**
@@ -18,6 +20,6 @@ export class InstallManagerDto {
    */
   @IsEnum(NodeManagerTypeEnum)
   @IsNotEmpty()
-  managerType: 'nvm-windows' | 'nvs' | 'fnm'
+  managerType: NodeManagerTypeEnum
 }
 

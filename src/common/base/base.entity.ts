@@ -61,3 +61,27 @@ export abstract class BaseEntityWithVersion extends BaseEntity {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
