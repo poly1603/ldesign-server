@@ -9,7 +9,7 @@ export default () => ({
     description:
       process.env.APP_DESCRIPTION ||
       'A robust NestJS API server with best practices',
-    port: parseInt(process.env.PORT, 10) || 3000,
+    port: parseInt(process.env.PORT, 10) || 7001,
     env: process.env.NODE_ENV || 'development',
   },
 
@@ -28,5 +28,8 @@ export default () => ({
   // 日志配置
   logging: {
     level: process.env.LOG_LEVEL || 'debug',
+    dir: process.env.LOG_DIR || 'logs',
+    maxFiles: process.env.LOG_MAX_FILES || '14d',
+    maxSize: process.env.LOG_MAX_SIZE || '20m',
   },
 });

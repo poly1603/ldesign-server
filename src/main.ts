@@ -1,16 +1,22 @@
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+import { LoggerService } from './logger/logger.service';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    bufferLogs: true, // 缓冲日志
+  });
   const configService = app.get(ConfigService);
-  const logger = new Logger('Bootstrap');
+  const logger = app.get(LoggerService);
+  
+  // 使用自定义日志服务
+  app.useLogger(logger);
 
   // 获取配置
   const port = configService.get('app.port', 3000);
@@ -40,12 +46,12 @@ async function bootstrap() {
   );
 
   // 全局异常过滤器
-  app.useGlobalFilters(new HttpExceptionFilter());
+  app.useGlobalFilters(app.get(HttpExceptionFilter));
 
   // 全局拦截器
   const reflector = app.get(Reflector);
   app.useGlobalInterceptors(
-    new LoggingInterceptor(),
+    app.get(LoggingInterceptor),
     new TransformInterceptor(reflector),
   );
 
@@ -62,6 +68,7 @@ async function bootstrap() {
       .setDescription(appDescription)
       .setVersion(appVersion)
       .addBearerAuth() // 添加认证支持
+      .addTag('system', '系统信息')
       .addTag('health', '健康检查')
       .addTag('users', '用户管理')
       .build();
@@ -78,12 +85,22 @@ async function bootstrap() {
       },
     });
 
-    logger.log(`Swagger 文档已启用: http://localhost:${port}/${swaggerPath}`);
+    logger.log(
+      `Swagger 文档已启用: http://localhost:${port}/${swaggerPath}`,
+      'Bootstrap',
+    );
   }
 
   await app.listen(port);
-  logger.log(`应用启动成功，监听端口: ${port}`);
-  logger.log(`API 地址: http://localhost:${port}/${apiPrefix}`);
+  
+  // 记录启动信息
+  logger.log(`应用启动成功，监听端口: ${port}`, 'Bootstrap');
+  logger.log(`API 地址: http://localhost:${port}/${apiPrefix}`, 'Bootstrap');
+  logger.logSystemEvent('Application Started', {
+    port,
+    environment: configService.get('app.env'),
+    version: configService.get('app.version'),
+  });
 }
 
 bootstrap();

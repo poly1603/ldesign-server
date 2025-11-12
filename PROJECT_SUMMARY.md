@@ -2,49 +2,49 @@
 
 ## 概述
 
-本项目已完成全面优化和完善，从一个基础的 NestJS 脚手架升级为企业级的、生产就绪的 API 服务器。
+本项目已完成全面优化和完善，从一个基础�?NestJS 脚手架升级为企业级的、生产就绪的 API 服务器�?
 
 ## 已完成的优化
 
-### ✅ 1. Swagger API 文档系统
+### �?1. Swagger API 文档系统
 
 **位置**: `src/main.ts`
 
 **功能**:
-- 自动生成完整的 API 文档
-- 支持在线测试所有接口
+- 自动生成完整�?API 文档
+- 支持在线测试所有接�?
 - Bearer Token 认证支持
 - 按标签分组的接口展示
 - 请求/响应示例
 - 自定义样式和配置
 
-**访问地址**: http://localhost:3000/api-docs
+**访问地址**: http://localhost:7001/api-docs
 
-### ✅ 2. 全局异常处理系统
+### �?2. 全局异常处理系统
 
 **位置**: `src/common/filters/http-exception.filter.ts`
 
 **功能**:
 - 捕获所有类型的异常
-- 统一的错误响应格式
-- 详细的错误日志记录
-- 支持自定义业务异常
+- 统一的错误响应格�?
+- 详细的错误日志记�?
+- 支持自定义业务异�?
 - 验证错误友好提示
 
 **示例**:
 ```typescript
-throw new BusinessException('用户不存在', ErrorCode.RESOURCE_NOT_FOUND);
+throw new BusinessException('用户不存�?, ErrorCode.RESOURCE_NOT_FOUND);
 ```
 
-### ✅ 3. 统一响应格式
+### �?3. 统一响应格式
 
 **位置**: `src/common/interceptors/transform.interceptor.ts`
 
 **功能**:
-- 自动包装所有成功响应
+- 自动包装所有成功响�?
 - 标准化的响应结构
-- 包含状态码、消息、数据、时间戳和路径
-- 支持自定义响应消息
+- 包含状态码、消息、数据、时间戳和路�?
+- 支持自定义响应消�?
 
 **响应格式**:
 ```json
@@ -57,23 +57,23 @@ throw new BusinessException('用户不存在', ErrorCode.RESOURCE_NOT_FOUND);
 }
 ```
 
-### ✅ 4. 日志系统
+### �?4. 日志系统
 
 **位置**: `src/common/interceptors/logging.interceptor.ts`
 
 **功能**:
-- 自动记录所有请求
-- 详细的请求参数记录
+- 自动记录所有请�?
+- 详细的请求参数记�?
 - 响应时间统计
 - 错误堆栈追踪
-- 可配置日志级别
+- 可配置日志级�?
 
 **日志内容**:
 - 请求方法、路径、IP、User-Agent
-- 请求体、查询参数、路径参数
-- 响应时间和状态
+- 请求体、查询参数、路径参�?
+- 响应时间和状�?
 
-### ✅ 5. 数据验证系统
+### �?5. 数据验证系统
 
 **位置**: `src/main.ts` (全局验证管道)
 
@@ -81,54 +81,54 @@ throw new BusinessException('用户不存在', ErrorCode.RESOURCE_NOT_FOUND);
 - 使用 DTO + class-validator 验证
 - 自动类型转换
 - 白名单过滤未定义字段
-- 详细的验证错误提示
-- 支持自定义验证规则
+- 详细的验证错误提�?
+- 支持自定义验证规�?
 
 **示例**:
 ```typescript
 export class CreateUserDto {
-  @IsString({ message: '用户名必须是字符串' })
-  @MinLength(3, { message: '用户名至少3个字符' })
+  @IsString({ message: '用户名必须是字符�? })
+  @MinLength(3, { message: '用户名至�?个字�? })
   username: string;
 }
 ```
 
-### ✅ 6. 环境配置管理
+### �?6. 环境配置管理
 
 **位置**: `src/config/configuration.ts`
 
 **功能**:
-- 集中管理所有配置
+- 集中管理所有配�?
 - 环境变量支持
-- 默认值设置
-- 类型安全的配置访问
-- 支持多环境
+- 默认值设�?
+- 类型安全的配置访�?
+- 支持多环�?
 
 **配置文件**:
 - `.env` - 本地环境变量
 - `.env.example` - 环境变量模板
 
-### ✅ 7. 健康检查端点
+### �?7. 健康检查端�?
 
 **位置**: `src/health/health.controller.ts`
 
 **功能**:
-- 系统健康状态监控
+- 系统健康状态监�?
 - 运行时间统计
 - 内存使用信息
 - 环境信息
 - Ping/Pong 测试
 
 **访问**:
-- `GET /api/health` - 完整健康检查
-- `GET /api/health/ping` - 简单 ping 测试
+- `GET /api/health` - 完整健康检�?
+- `GET /api/health/ping` - 简�?ping 测试
 
-### ✅ 8. 用户管理示例模块
+### �?8. 用户管理示例模块
 
 **位置**: `src/users/`
 
 **功能**:
-- 完整的 CRUD 操作
+- 完整�?CRUD 操作
 - DTO 验证示例
 - 业务异常处理示例
 - Swagger 文档示例
@@ -141,37 +141,37 @@ export class CreateUserDto {
 - `PATCH /api/users/:id` - 更新用户
 - `DELETE /api/users/:id` - 删除用户
 
-### ✅ 9. 通用组件
+### �?9. 通用组件
 
 **位置**: `src/common/`
 
 **包含**:
 - **decorators**: 自定义装饰器
-  - `ApiSuccessResponse` - 成功响应装饰器
-  - `ApiCreatedResponse` - 创建成功装饰器
-  - `ResponseMessage` - 响应消息装饰器
+  - `ApiSuccessResponse` - 成功响应装饰�?
+  - `ApiCreatedResponse` - 创建成功装饰�?
+  - `ResponseMessage` - 响应消息装饰�?
 
 - **dto**: 通用 DTO
   - `ResponseDto` - 统一响应格式
 
-- **exceptions**: 自定义异常
-  - `BusinessException` - 业务异常类
-  - `ErrorCode` - 错误码枚举
+- **exceptions**: 自定义异�?
+  - `BusinessException` - 业务异常�?
+  - `ErrorCode` - 错误码枚�?
 
-- **filters**: 异常过滤器
-  - `HttpExceptionFilter` - HTTP 异常过滤器
+- **filters**: 异常过滤�?
+  - `HttpExceptionFilter` - HTTP 异常过滤�?
 
-- **interceptors**: 拦截器
-  - `TransformInterceptor` - 响应转换拦截器
-  - `LoggingInterceptor` - 日志拦截器
+- **interceptors**: 拦截�?
+  - `TransformInterceptor` - 响应转换拦截�?
+  - `LoggingInterceptor` - 日志拦截�?
 
-### ✅ 10. 完善的文档
+### �?10. 完善的文�?
 
 **文档列表**:
-- `README.md` - 完整的项目文档
+- `README.md` - 完整的项目文�?
 - `ARCHITECTURE.md` - 架构设计文档
 - `CHANGELOG.md` - 变更日志
-- `PROJECT_SUMMARY.md` - 项目总结（本文档）
+- `PROJECT_SUMMARY.md` - 项目总结（本文档�?
 - `.env.example` - 环境变量示例
 
 ## 项目结构
@@ -179,32 +179,32 @@ export class CreateUserDto {
 ```
 src/
 ├── common/                     # 通用模块
-│   ├── decorators/            # 自定义装饰器
-│   │   └── api-response.decorator.ts
-│   ├── dto/                   # 通用 DTO
-│   │   └── response.dto.ts
-│   ├── exceptions/            # 自定义异常
-│   │   └── business.exception.ts
-│   ├── filters/               # 异常过滤器
-│   │   └── http-exception.filter.ts
-│   └── interceptors/          # 拦截器
-│       ├── transform.interceptor.ts
-│       └── logging.interceptor.ts
+�?  ├── decorators/            # 自定义装饰器
+�?  �?  └── api-response.decorator.ts
+�?  ├── dto/                   # 通用 DTO
+�?  �?  └── response.dto.ts
+�?  ├── exceptions/            # 自定义异�?
+�?  �?  └── business.exception.ts
+�?  ├── filters/               # 异常过滤�?
+�?  �?  └── http-exception.filter.ts
+�?  └── interceptors/          # 拦截�?
+�?      ├── transform.interceptor.ts
+�?      └── logging.interceptor.ts
 ├── config/                     # 配置
-│   └── configuration.ts
-├── health/                     # 健康检查模块
-│   ├── health.controller.ts
-│   └── health.module.ts
+�?  └── configuration.ts
+├── health/                     # 健康检查模�?
+�?  ├── health.controller.ts
+�?  └── health.module.ts
 ├── users/                      # 用户模块（示例）
-│   ├── dto/
-│   │   ├── create-user.dto.ts
-│   │   └── update-user.dto.ts
-│   ├── entities/
-│   │   └── user.entity.ts
-│   ├── users.controller.ts
-│   ├── users.service.ts
-│   └── users.module.ts
-├── app.module.ts              # 根模块
+�?  ├── dto/
+�?  �?  ├── create-user.dto.ts
+�?  �?  └── update-user.dto.ts
+�?  ├── entities/
+�?  �?  └── user.entity.ts
+�?  ├── users.controller.ts
+�?  ├── users.service.ts
+�?  └── users.module.ts
+├── app.module.ts              # 根模�?
 └── main.ts                    # 应用入口
 ```
 
@@ -226,29 +226,29 @@ npm run start:prod
 
 ### 2. 访问 API 文档
 
-启动应用后，访问：http://localhost:3000/api-docs
+启动应用后，访问：http://localhost:7001/api-docs
 
-在 Swagger 界面可以：
-- 查看所有 API 接口
+�?Swagger 界面可以�?
+- 查看所�?API 接口
 - 在线测试接口
 - 查看请求/响应示例
 - 查看数据模型
 
-### 3. 测试健康检查
+### 3. 测试健康检�?
 
 ```bash
-# 完整健康检查
-curl http://localhost:3000/api/health
+# 完整健康检�?
+curl http://localhost:7001/api/health
 
 # Ping 测试
-curl http://localhost:3000/api/health/ping
+curl http://localhost:7001/api/health/ping
 ```
 
 ### 4. 测试用户 API
 
 ```bash
 # 创建用户
-curl -X POST http://localhost:3000/api/users \
+curl -X POST http://localhost:7001/api/users \
   -H "Content-Type: application/json" \
   -d '{
     "username": "john_doe",
@@ -256,32 +256,32 @@ curl -X POST http://localhost:3000/api/users \
     "age": 25
   }'
 
-# 获取所有用户
-curl http://localhost:3000/api/users
+# 获取所有用�?
+curl http://localhost:7001/api/users
 
 # 获取单个用户
-curl http://localhost:3000/api/users/1
+curl http://localhost:7001/api/users/1
 
 # 更新用户
-curl -X PATCH http://localhost:3000/api/users/1 \
+curl -X PATCH http://localhost:7001/api/users/1 \
   -H "Content-Type: application/json" \
   -d '{"age": 26}'
 
 # 删除用户
-curl -X DELETE http://localhost:3000/api/users/1
+curl -X DELETE http://localhost:7001/api/users/1
 ```
 
-## 开发指南
+## 开发指�?
 
-### 创建新模块
+### 创建新模�?
 
-使用 NestJS CLI：
+使用 NestJS CLI�?
 
 ```bash
-# 创建完整的 CRUD 模块
+# 创建完整�?CRUD 模块
 nest g resource products
 
-# 或单独创建
+# 或单独创�?
 nest g module products
 nest g controller products
 nest g service products
@@ -289,7 +289,7 @@ nest g service products
 
 ### 添加 API 文档
 
-在 Controller 中添加装饰器：
+�?Controller 中添加装饰器�?
 
 ```typescript
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
@@ -309,7 +309,7 @@ export class ProductsController {
 
 ### 添加数据验证
 
-创建 DTO 并使用 class-validator：
+创建 DTO 并使�?class-validator�?
 
 ```typescript
 import { IsString, IsNumber, Min } from 'class-validator';
@@ -321,7 +321,7 @@ export class CreateProductDto {
   name: string;
 
   @ApiProperty({ description: '价格' })
-  @IsNumber({}, { message: '价格必须是数字' })
+  @IsNumber({}, { message: '价格必须是数�? })
   @Min(0, { message: '价格不能为负' })
   price: number;
 }
@@ -333,7 +333,7 @@ export class CreateProductDto {
 import { BusinessException, ErrorCode } from '../common/exceptions/business.exception';
 
 if (!product) {
-  throw new BusinessException('产品不存在', ErrorCode.RESOURCE_NOT_FOUND);
+  throw new BusinessException('产品不存�?, ErrorCode.RESOURCE_NOT_FOUND);
 }
 ```
 
@@ -341,12 +341,12 @@ if (!product) {
 
 ### 环境变量
 
-在 `.env` 文件中配置：
+�?`.env` 文件中配置：
 
 ```env
 # 应用配置
 NODE_ENV=development
-PORT=3000
+PORT=7001
 
 # API 配置
 API_PREFIX=api
@@ -363,74 +363,74 @@ LOG_LEVEL=debug
 ## 代码质量
 
 项目已配置：
-- ✅ TypeScript 严格模式
-- ✅ ESLint 代码规范
-- ✅ Prettier 代码格式化
-- ✅ 完整的类型定义
-- ✅ 详细的代码注释
+- �?TypeScript 严格模式
+- �?ESLint 代码规范
+- �?Prettier 代码格式�?
+- �?完整的类型定�?
+- �?详细的代码注�?
 
-## 性能特性
+## 性能特�?
 
-- ✅ 自动类型转换减少运行时开销
-- ✅ 全局拦截器优化
-- ✅ 高效的异常处理
-- ✅ 可配置的日志级别
+- �?自动类型转换减少运行时开销
+- �?全局拦截器优�?
+- �?高效的异常处�?
+- �?可配置的日志级别
 
-## 安全特性
+## 安全特�?
 
-- ✅ 请求参数验证
-- ✅ 白名单过滤
-- ✅ CORS 配置
-- ✅ 统一错误处理（不泄露敏感信息）
+- �?请求参数验证
+- �?白名单过�?
+- �?CORS 配置
+- �?统一错误处理（不泄露敏感信息�?
 
-## 下一步扩展建议
+## 下一步扩展建�?
 
-### 短期（v1.1.0）
-1. 集成数据库（TypeORM 或 Prisma）
+### 短期（v1.1.0�?
+1. 集成数据库（TypeORM �?Prisma�?
 2. 实现 JWT 认证
-3. 添加权限控制（RBAC）
+3. 添加权限控制（RBAC�?
 4. 实现文件上传
 5. 添加分页查询
 
-### 中期（v1.2.0）
+### 中期（v1.2.0�?
 1. 集成 Redis 缓存
-2. 邮件发送服务
-3. 任务队列（Bull）
+2. 邮件发送服�?
+3. 任务队列（Bull�?
 4. WebSocket 支持
-5. 国际化（i18n）
+5. 国际化（i18n�?
 
-### 长期（v2.0.0）
+### 长期（v2.0.0�?
 1. GraphQL 支持
-2. 微服务架构
+2. 微服务架�?
 3. 事件驱动架构
 4. 消息队列集成
-5. 分布式追踪
+5. 分布式追�?
 
 ## 常见问题
 
-### Q: 如何修改端口？
-A: 在 `.env` 文件中修改 `PORT` 变量。
+### Q: 如何修改端口�?
+A: �?`.env` 文件中修�?`PORT` 变量�?
 
 ### Q: Swagger 文档不显示？
-A: 确保 `.env` 中 `SWAGGER_ENABLED=true`。
+A: 确保 `.env` �?`SWAGGER_ENABLED=true`�?
 
 ### Q: 验证不生效？
-A: 确保 DTO 使用了 class-validator 装饰器，且全局验证管道已启用。
+A: 确保 DTO 使用�?class-validator 装饰器，且全局验证管道已启用�?
 
-### Q: 如何禁用日志？
-A: 在 `.env` 中设置 `LOG_LEVEL=error` 或在 `main.ts` 中移除 LoggingInterceptor。
+### Q: 如何禁用日志�?
+A: �?`.env` 中设�?`LOG_LEVEL=error` 或在 `main.ts` 中移�?LoggingInterceptor�?
 
 ## 总结
 
-本项目已从基础脚手架升级为功能完善的企业级 API 服务器，具备：
+本项目已从基础脚手架升级为功能完善的企业级 API 服务器，具备�?
 
-✅ 完整的 API 文档系统  
-✅ 健壮的异常处理机制  
-✅ 统一的响应格式  
-✅ 详细的日志记录  
-✅ 严格的数据验证  
-✅ 模块化的架构设计  
-✅ 完善的开发文档  
-✅ 生产就绪的代码质量  
+�?完整�?API 文档系统  
+�?健壮的异常处理机�? 
+�?统一的响应格�? 
+�?详细的日志记�? 
+�?严格的数据验�? 
+�?模块化的架构设计  
+�?完善的开发文�? 
+�?生产就绪的代码质�? 
 
-可以作为新项目的起点，也可以作为学习 NestJS 最佳实践的参考。
+可以作为新项目的起点，也可以作为学习 NestJS 最佳实践的参考�?
