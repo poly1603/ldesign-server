@@ -57,15 +57,35 @@ export class HttpExceptionFilter implements ExceptionFilter {
       message = exception.message;
     }
 
+    // 为 404 错误提供更友好的消息
+    if (status === 404) {
+      message = `接口不存在: ${request.method} ${request.url}`;
+    }
+
     // 记录详细的错误日志
-    this.logger.logError(
-      request.method,
-      request.url,
-      status,
-      message,
-      exception.stack,
-      request.ip,
-    );
+    // 客户端错误 (4xx) 使用 warn 级别，服务端错误 (5xx) 使用 error 级别
+    if (status >= 500) {
+      this.logger.logError(
+        request.method,
+        request.url,
+        status,
+        message,
+        exception.stack,
+        request.ip,
+      );
+    } else if (status === 404) {
+      // 404 错误使用 debug 级别，避免日志污染
+      this.logger.debug(
+        `${request.method} ${request.url} - 404 Not Found`,
+        'HttpException',
+      );
+    } else {
+      // 其他客户端错误使用 warn 级别
+      this.logger.warn(
+        `${request.method} ${request.url} - ${status}: ${message}`,
+        'HttpException',
+      );
+    }
 
     // 构建错误响应
     const errorResponse = new ResponseDto(

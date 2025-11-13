@@ -21,6 +21,7 @@ async function bootstrap() {
   // 获取配置
   const port = configService.get('app.port', 3000);
   const apiPrefix = configService.get('api.prefix', 'api');
+  const apiVersion = configService.get('api.version', 'v1');
   const swaggerEnabled = configService.get('swagger.enabled', true);
   const swaggerPath = configService.get('swagger.path', 'api-docs');
   const appName = configService.get('app.name', 'NestJS API Server');
@@ -31,7 +32,7 @@ async function bootstrap() {
   );
 
   // 设置全局路径前缀
-  app.setGlobalPrefix(apiPrefix);
+  app.setGlobalPrefix(`${apiPrefix}/${apiVersion}`);
 
   // 全局验证管道
   app.useGlobalPipes(
@@ -95,7 +96,7 @@ async function bootstrap() {
   
   // 记录启动信息
   logger.log(`应用启动成功，监听端口: ${port}`, 'Bootstrap');
-  logger.log(`API 地址: http://localhost:${port}/${apiPrefix}`, 'Bootstrap');
+  logger.log(`API 地址: http://localhost:${port}/${apiPrefix}/${apiVersion}`, 'Bootstrap');
   logger.logSystemEvent('Application Started', {
     port,
     environment: configService.get('app.env'),
